@@ -136,6 +136,8 @@ void CSV_cabecalhoCriar(FILE* inputCSV, regCabecalho* inputCab){
 
     //Agora eu coloca 1 em matAdj[A][B] e matAdj[B][A] se eles sao pares
     fseek(inputCSV, 0, SEEK_SET); // Ultima vez que eu volto no começo do arquivo
+    fgets(linha, sizeof(linha), inputCSV); 
+    
     while(fgets(linha, sizeof(linha), inputCSV) != NULL){
         int ID, Prox;
         ID = CSV_lerIntCampo(linha, 1);
