@@ -1,0 +1,26 @@
+all: func_reg.o func_csv.o main.o
+	gcc func_reg.o func_csv.o main.o -o programTrab
+	rm *.o
+
+
+all_windows: func_reg.o func_csv.o main.o
+	gcc func_reg.o func_csv.o main.o -o programTrab
+	del *.o
+
+func_reg.o:
+	gcc -c func_reg.c
+
+func_csv.o:
+	gcc -c func_csv.c
+
+main.o:
+	gcc -c main.c
+
+clean_windows:
+	del /Q *.o programTrab
+
+clean:
+	rm -f *.o programTrab
+
+run:
+	./programTrab
