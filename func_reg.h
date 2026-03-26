@@ -14,7 +14,7 @@ typedef struct {
 //Dados
 typedef struct {
     char removido;
-    int proximoRRNRemovido; // proximo registro removido para o funcionamento da pilha de removidos
+    int proxRRN; // proximo registro removido para o funcionamento da pilha de removidos
     int codEstacao;         
     int codLinha;
     int codProxEstacao;

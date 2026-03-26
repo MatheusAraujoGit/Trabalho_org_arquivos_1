@@ -8,12 +8,10 @@
 
 //Ver comentarios no .c
 
-char* CSV_ponteiroCampo(char* linha, int nCampo);
-
-void CSV_lerStringCampo(char outputVetor[], char* linha, int nCampo);
-
-int CSV_lerIntCampo(char* linha, int nCampo);
-
 void CSV_cabecalhoCriar(FILE* inputCSV, regCabecalho* inputCab);
+
+regDados** CSV_criarVetorRegDados(FILE* inputCSV, int* TamanhoVetor);
+
+void CSV_apagarVetorRegDados(regDados** VetorDados, int TamanhoVetor);
 
 #endif

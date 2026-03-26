@@ -35,7 +35,7 @@ void CSV_lerStringCampo(char outputVetor[], char* linha, int nCampo){
     strcpy(outputVetor, CSV_ponteiroCampo(linha, nCampo));// supondo que eu quero o campo 2, "16,Ana Rosa,300,..." vira "Ana Rosa,300..." com o CSV_ponteiroCampo
     char* pCaracter= outputVetor;
     while(*pCaracter != '\0'){ 
-        if(*pCaracter == ','){
+        if(*pCaracter == ',' || *pCaracter == '\n'){
             *pCaracter = '\0';                            //Com essa parte aqui "Ana Rosa,300..." vira "Ana Rosa\0300..."
         }
         pCaracter++;
@@ -51,6 +51,39 @@ int CSV_lerIntCampo(char* linha, int nCampo){
     else{
         return atoi(vetorTemporario);               //faz a string descerevendo um numero virar int
     }
+}
+
+//Funçao auxiliar que retorna ponteiro para um registro de dados alocado dinamicamente
+//dados desse registro vem de uma linha do csv
+regDados* CSV_registroPorLinha(char* linha){
+    regDados* regOutput = (regDados*) malloc(sizeof(regDados));
+
+    //Dados faceis
+    regOutput->removido = 0;
+    regOutput->proxRRN = -1;
+    regOutput->codEstacao = CSV_lerIntCampo(linha, 1);
+    regOutput->codLinha = CSV_lerIntCampo(linha, 3);
+    regOutput->codProxEstacao = CSV_lerIntCampo(linha, 5);
+    regOutput->distProxEstacao = CSV_lerIntCampo(linha,6);
+    regOutput->codLinhaIntegra = CSV_lerIntCampo(linha,7);
+    regOutput->codEstIntegra = CSV_lerIntCampo(linha, 8);
+
+
+    //Agora conseguir as strings
+    //NA MEMORIA vou deixar as strings com final \0, para ter acesso as funcoes da string.h, só vou tirar o \0 na hora de escrever no disco
+    char bufferParaString[256];
+
+    CSV_lerStringCampo(bufferParaString, linha, 2);
+    regOutput->nomeEstacao = strdup(bufferParaString); //strdup me faz o trabalho de alocar dinamicamente isso aqui
+
+    CSV_lerStringCampo(bufferParaString, linha, 4);
+    regOutput->nomeLinha = strdup(bufferParaString);
+
+    //Tamanho das strings sem o \0
+    regOutput->tamNomeEstacao = strlen(regOutput->nomeEstacao);
+    regOutput->tamNomeLinha = strlen(regOutput->nomeLinha);
+
+    return regOutput;
 }
 
 void CSV_cabecalhoCriar(FILE* inputCSV, regCabecalho* inputCab){
@@ -70,11 +103,13 @@ void CSV_cabecalhoCriar(FILE* inputCSV, regCabecalho* inputCab){
     //Obter numero de estacoes
     
     //Vou inicializar o array onde vou colocar os nomes
+    //Solucao meio nuclear eu alocar 200 bytes para isso mas funciona
     char* nomesUnicos[200];
     for(int i = 0; i<200; i++){
         nomesUnicos[i] = NULL;
     }
 
+    //Colocar nomes unicos em no array
     while( fgets(linha, sizeof(linha), inputCSV) != NULL ){
         CSV_lerStringCampo(campo, linha, 2);    //Ler
 
@@ -158,6 +193,42 @@ void CSV_cabecalhoCriar(FILE* inputCSV, regCabecalho* inputCab){
     }
     inputCab->nParesEstacao = acum/2;
 
-    inputCab->status = '1'; // terminei de mexer nele entao o arquivo esta consistente por enquanto
+}
 
+//Vou retornar um vetor dinâmico de ponteiros para regDados e escrever o tamanho dele no TamanhoVetor
+regDados** CSV_criarVetorRegDados(FILE* inputCSV, int* TamanhoVetor){
+    *TamanhoVetor = 0;
+    char linha[512];
+    fseek(inputCSV, 0, SEEK_SET);
+    fgets(linha, sizeof(linha), inputCSV);  //Pular primeira linha
+
+    //Vou contar o tamanho do vetor pelo numero de registros necessarios
+    while( fgets(linha, sizeof(linha), inputCSV) != NULL){  
+        *TamanhoVetor += 1;
+    }
+
+    //Aloco o vetor de registros de dados
+    regDados** vetorOutput  = (regDados**)malloc( (*TamanhoVetor) * sizeof(regDados*) );
+
+    //Volto para o começo do arquivo para agora popular o vetor com os registros
+    fseek(inputCSV, 0, SEEK_SET);
+    fgets(linha, sizeof(linha), inputCSV);
+
+    for(int i = 0; i<(*TamanhoVetor); i++){
+        fgets(linha, sizeof(linha), inputCSV);
+        vetorOutput[i] = CSV_registroPorLinha(linha);
+    }
+
+    return vetorOutput;
+}
+
+//Desalocar toda a memoria do vetorRegDados
+void CSV_apagarVetorRegDados(regDados** VetorDados, int TamanhoVetor){
+    //Preciso desalocar as strings tambem, pq eu aloquei elas dinamicamente
+    for(int i = 0; i<TamanhoVetor; i++){
+        free(VetorDados[i]->nomeEstacao);
+        free(VetorDados[i]->nomeLinha);
+        free(VetorDados[i]);
+    }
+    free(VetorDados);
 }
