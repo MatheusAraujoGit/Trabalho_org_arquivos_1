@@ -3,7 +3,7 @@
 //Funcao auxiliar para selecionar qual campo eu quero de uma linha
 //retorna ponteiro para primeira posicao do campo que eu quero depois da virgula
 //Campo vai de 1 a 8
-char* CSV_ponteiroCampo(char* linha, int campo) {
+char* CSV_ponteiroParaCampo(char* linha, int campo) {
     if (campo == 1) return linha;
 
     int virgulasEncontradas = 0;
@@ -27,12 +27,12 @@ char* CSV_ponteiroCampo(char* linha, int campo) {
 //Se estiver vazio outputVetor = "";
 void CSV_lerStringCampo(char outputVetor[], char* linha, int nCampo){
 
-    if(CSV_ponteiroCampo(linha, nCampo) == NULL){ // vazio -> ""
+    if(CSV_ponteiroParaCampo(linha, nCampo) == NULL){ // vazio -> ""
         strcpy(outputVetor, "");
         return;
     }
 
-    strcpy(outputVetor, CSV_ponteiroCampo(linha, nCampo));// supondo que eu quero o campo 2, "16,Ana Rosa,300,..." vira "Ana Rosa,300..." com o CSV_ponteiroCampo
+    strcpy(outputVetor, CSV_ponteiroParaCampo(linha, nCampo));// supondo que eu quero o campo 2, "16,Ana Rosa,300,..." vira "Ana Rosa,300..." com o CSV_ponteiroParaCampo
     char* pCaracter= outputVetor;
     while(*pCaracter != '\0'){ 
         if(*pCaracter == ',' || *pCaracter == '\n'){
