@@ -110,7 +110,7 @@ void CSV_cabecalhoCriar(FILE* inputCSV, regCabecalho* inputCab){
     }
     
     //Agora contar numero de pares
-    //No aulao disseram que o grafo das estacoes era nao direcional ( (A,B) = (B,A))
+    //No aulao disseram que o grafo das estacoes era nao direcional ( (A,B) = (B,A)) e baseado em ids
 
     //Volto para o inicio do arquivo(eu tecnicamente poderia fazer a contagem de pares e de estacoes ao mesmo tempo ja que uma usa ids e a outra os nomes...
     //Mas isso ia ficar MUITO feio)
@@ -157,5 +157,7 @@ void CSV_cabecalhoCriar(FILE* inputCSV, regCabecalho* inputCab){
         }
     }
     inputCab->nParesEstacao = acum/2;
+
+    inputCab->status = '1'; // terminei de mexer nele entao o arquivo esta consistente por enquanto
 
 }
