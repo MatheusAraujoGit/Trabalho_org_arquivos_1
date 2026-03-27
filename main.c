@@ -16,7 +16,7 @@ int main() {
     regCabecalho cab;
     int tamVetorDados = 0;
     regDados** vetorDados;  //esse cara tem todos os registros na memoria, provavelmente só vai precisar dele na primeira funcionalidade, entao vamos poder
-                            // desalocar ele depois e não necessariamente no final do arquivo
+                            // desalocar ele antes do fim da execucao eu acho
 
     CSV_cabecalhoCriar(inputCSV, &cab);
     vetorDados = CSV_criarVetorRegDados(inputCSV, &tamVetorDados);
