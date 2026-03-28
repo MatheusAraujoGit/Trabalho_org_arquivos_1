@@ -6,12 +6,12 @@
 #include <string.h>
 #include "func_reg.h"
 
-//Ver comentarios no .c
+// Ver comentarios no .c
 
-void CSV_cabecalhoCriar(FILE* inputCSV, regCabecalho* inputCab);
+void CSV_cabecalhoCriar(FILE *inputCSV, regCabecalho *inputCab);
 
-regDados** CSV_criarVetorRegDados(FILE* inputCSV, int* TamanhoVetor);
+regDados **CSV_criarVetorRegDados(FILE *inputCSV, int *TamanhoVetor);
 
-void CSV_apagarVetorRegDados(regDados** VetorDados, int TamanhoVetor);
+void CSV_apagarVetorRegDados(regDados **VetorDados, int TamanhoVetor);
 
 #endif
