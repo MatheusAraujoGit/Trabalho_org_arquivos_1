@@ -37,4 +37,6 @@ void REGCab_escrever(FILE* outputBIN, regCabecalho* pRegCab);
 
 void REG_criarBIN(FILE* outputBIN, regCabecalho* pRegCab, regDados** vetorRegDados, int TamanhoVetor);
 
+void REGDados_printBIN(FILE* BIN);
+
 #endif

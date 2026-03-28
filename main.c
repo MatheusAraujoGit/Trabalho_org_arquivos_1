@@ -14,19 +14,21 @@ int main() {
     }
 
     regCabecalho cab;
-    int tamVetorDados = 0;
+    int QuantidadeRegDados = 0;
     regDados** vetorDados;  //esse cara tem todos os registros na memoria, provavelmente só vai precisar dele na primeira funcionalidade, entao vamos poder
-                            // desalocar ele antes do fim da execucao eu acho
+                            //desalocar ele antes do fim da execucao eu acho
 
     CSV_cabecalhoCriar(inputCSV, &cab);
-    vetorDados = CSV_criarVetorRegDados(inputCSV, &tamVetorDados);
+    vetorDados = CSV_criarVetorRegDados(inputCSV, &QuantidadeRegDados);
 
     //Primeira funcionalidade
-    REG_criarBIN(outputBIN, &cab, vetorDados, tamVetorDados);
+    REG_criarBIN(outputBIN, &cab, vetorDados, QuantidadeRegDados);
 
+    //Não sei se contaria como trapaça eu fazer a segunda funcionalidade pelo vetor alocado na memoria, entao vou fazer pela leitura do arquivo mesmo
+    REGDados_printBIN(outputBIN);
 
     
-    CSV_apagarVetorRegDados(vetorDados, tamVetorDados);
+    CSV_apagarVetorRegDados(vetorDados, QuantidadeRegDados);
 
     fclose(inputCSV);
     fclose(outputBIN);
