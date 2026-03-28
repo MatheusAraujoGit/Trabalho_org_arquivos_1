@@ -209,9 +209,9 @@ void REGDados_printBIN(FILE *BIN)
 }
 
 // Funcao auxiliar para a buscaReg
-//  1 se passou, 0 se não passou
-//  Que funçao feia meu deus
-//  Valor nulo de string dentro do criterio é "" igual ao valor nulo de string na memoria
+// 1 se passou, 0 se não passou
+// Que funçao feia meu deus
+// Valor nulo de string dentro do criterio é "" igual ao valor nulo de string na memoria
 char REGDados_testeCriterio(regDados registro, criterio teste)
 {
 

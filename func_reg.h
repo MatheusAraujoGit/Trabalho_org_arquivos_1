@@ -37,6 +37,7 @@ typedef struct
 } regDados;
 
 // struct criterio para as funcionalidades 3 para cima
+// Valor nulo de string dentro do criterio é "" igual ao valor nulo de string na memoria
 typedef struct
 {
     char nomeCampo[32];
