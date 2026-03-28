@@ -17,6 +17,9 @@ typedef struct
 } regCabecalho;
 
 // Dados
+// strings de nome sao alocadas dinamicamente na memoria
+// e tambem strings nulas NA MEMORIA sao "", pq eu acho que dario erro de null pointer no fread e no fwrite se eu colocasse NULL direto
+// mas eu NAO escrevo "" no arquivo, como o tamanho da string sem o \0 é 0 eu escrevo 0 bytes no arquivo
 typedef struct
 {
     char removido;
