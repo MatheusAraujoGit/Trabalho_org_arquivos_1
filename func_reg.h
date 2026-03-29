@@ -57,10 +57,6 @@ void REGDados_printBIN(FILE *BIN);
 
 int REGDados_buscaReg(FILE *BIN, regDados *outputReg, int m, criterio testes[]);
 
-int REGDados_buscarRegistros(FILE *BIN, criterio *testes, int m, regDados **resultados);
-
-void REGDados_printRegistros(regDados *resultados, int qtd);
-
 void REGDados_printComInputDeCriterios(FILE *BIN);
 
 #endif
