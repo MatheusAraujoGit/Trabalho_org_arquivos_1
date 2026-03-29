@@ -33,6 +33,7 @@ int main()
 
     // Terceira funcionalidade ja com parte do input(nao recebe nome do arquivo)
     // O jeito que foi implementado foi um pouco horrendo mas funciona
+    // Precisa trocar um scanf na implementacao dele pelo scanf_quote que os monitores vao passar
     REGDados_printComInputDeCriterios(outputBIN);
 
     fclose(inputCSV);
