@@ -31,34 +31,9 @@ int main()
     fseek(outputBIN, 0, SEEK_SET);
     REGDados_printBIN(outputBIN);
 
-    // testes para ver se a busca esta funcionando
-    criterio testes[2];
-
-    strcpy(testes[0].nomeCampo, "codProxEstacao");
-    testes[0].valorInt = -1;
-
-    strcpy(testes[1].nomeCampo, "nomeEstacao");
-    strcpy(testes[1].valorString, "Vila Prudente");
-
-    regDados resultadoBusca;
-    resultadoBusca.nomeEstacao = NULL;
-    resultadoBusca.nomeLinha = NULL;
-
-    fseek(outputBIN, sizeof(char) + sizeof(int) * 4, SEEK_SET); // Pular cabecalho
-    int posicao = REGDados_buscaReg(outputBIN, &resultadoBusca, 2, testes);
-
-    if (posicao == -1)
-    {
-        printf("Não achou\n");
-    }
-    else
-    {
-        printf("byte offset %d\n", posicao);
-        REGDados_printDados(resultadoBusca);
-    }
-
-    free(resultadoBusca.nomeEstacao);
-    free(resultadoBusca.nomeLinha);
+    // Terceira funcionalidade ja com parte do input(nao recebe nome do arquivo)
+    // O jeito que foi implementado foi um pouco horrendo mas funciona
+    REGDados_printComInputDeCriterios(outputBIN);
 
     fclose(inputCSV);
     fclose(outputBIN);

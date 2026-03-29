@@ -258,7 +258,7 @@ char REGDados_testeCriterio(regDados registro, criterio teste)
 
 // Procura por um registro que atende todos os criterios e retorna a posicao dele no bin
 // e copia o conteudo dele para o outputReg na memoria
-// Começa a procurar a partir da posicao atual do ponteiro do arquivo
+// Começa a procurar a partir da posicao atual do ponteiro do arquivo e move ele para frente
 // tambem supoe que ja tenha passado pelo cabecalho
 // retorna -1 se nao achou nada(fim de arquivo)
 int REGDados_buscaReg(FILE *BIN, regDados *outputReg, int m, criterio testes[])
@@ -291,4 +291,101 @@ int REGDados_buscaReg(FILE *BIN, regDados *outputReg, int m, criterio testes[])
         }
     }
     return ftell(BIN) - 80; // Eu passei pelo registro que eu queria por causa dos freads, entao tenho que compensar voltando 80 bytes
+}
+
+// Essa funcao eu fiz direto com o input do terminal pq eu nao sei como separar a parte do print e da busca sem enlouquecer com alocacao dinamica
+void REGDados_printComInputDeCriterios(FILE *BIN)
+{
+
+    regCabecalho tempCab;
+
+    REGCab_ler(BIN, &tempCab);
+
+    if (tempCab.status == '0')
+    {
+        printf("Falha no processamento do arquivo.\n");
+        return;
+    }
+
+    int n = 0;
+    scanf("%d", &n);
+
+    // Esse for itera pelas diferentes buscas
+    for (int i = 0; i < n; i++)
+    {
+        fseek(BIN, 17, SEEK_SET); // volto para o comeco depois do cabecalho
+
+        int m;
+        scanf("%d", &m); // Quantidade de filtros para busca
+
+        criterio *testes = (criterio *)malloc(m * sizeof(criterio));
+
+        // For para ler os criterios e colocar eles no vetor
+        for (int j = 0; j < m; j++)
+        {
+            scanf("%s", testes[j].nomeCampo);
+
+            if (strcmp(testes[j].nomeCampo, "nomeEstacao") == 0 ||
+                strcmp(testes[j].nomeCampo, "nomeLinha") == 0)
+            {
+                scanf("%s", testes[j].valorString); // TEM QUE TROCAR ESSE SCANF PELO SCANF_QUOTE SLA OQ QUE OS MONITORES VAO PASSAR DEPOIS
+                if (strcmp(testes[j].valorString, "NULO") == 0)
+                    strcpy(testes[j].valorString, "");
+            }
+            else
+            {
+                char temp[128];
+                scanf("%s", temp);
+                if (strcmp(temp, "NULO") == 0)
+                    testes[j].valorInt = -1;
+                else
+                    testes[j].valorInt = atoi(temp);
+            }
+        }
+
+        // A partir daqui eu tenho todos os testes prontos e posso começar a buscar
+        regDados tempReg;
+        tempReg.nomeEstacao = NULL;
+        tempReg.nomeLinha = NULL;
+
+        int encontrouAlgum = 0;
+        int flag;
+
+        while ((flag = REGDados_ler(BIN, &tempReg)) != -1)
+        {
+            if (flag == 1) // achou um registro valido
+            {
+                int passouTodos = 1;
+                for (int k = 0; k < m; k++)
+                {
+                    if (REGDados_testeCriterio(tempReg, testes[k]) == 0)
+                    {
+                        passouTodos = 0;
+                        break;
+                    }
+                }
+
+                if (passouTodos)
+                {
+                    REGDados_printDados(tempReg);
+                    encontrouAlgum = 1;
+                }
+            }
+        }
+
+        // Liberar a memoria que esta no tempReg
+        if (tempReg.nomeEstacao != NULL)
+            free(tempReg.nomeEstacao);
+        if (tempReg.nomeLinha != NULL)
+            free(tempReg.nomeLinha);
+
+        free(testes);
+
+        if (!encontrouAlgum)
+        {
+            printf("Registro inexistente.\n");
+        }
+    }
+
+    return;
 }
