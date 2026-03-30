@@ -14,7 +14,7 @@ typedef struct
     int proxRRN; // proximo rrn disponivel
     int nEstacoes;
     int nParesEstacao;
-} regCabecalho;
+} regHeader;
 
 // Dados
 // strings de nome sao alocadas dinamicamente na memoria
@@ -34,29 +34,29 @@ typedef struct
     char *nomeEstacao;
     int tamNomeLinha;
     char *nomeLinha;
-} regDados;
+} regData;
 
-// struct criterio para as funcionalidades 3 para cima
-// Valor nulo de string dentro do criterio é "" igual ao valor nulo de string na memoria
+// struct criteria para as funcionalidades 3 para cima
+// Valor nulo de string dentro do criteria é "" igual ao valor nulo de string na memoria
 typedef struct
 {
     char nomeCampo[32];
     int valorInt;
     char valorString[128];
-} criterio;
+} criteria;
 
-void REGDados_escrever(FILE *outputBIN, regDados *pRegDados);
+void regData_escrever(FILE *outputBIN, regData *pregData);
 
-void REGCab_escrever(FILE *outputBIN, regCabecalho *pRegCab);
+void REGCab_escrever(FILE *outputBIN, regHeader *pRegCab);
 
-void REGDados_printDados(regDados registro);
+void regData_printDados(regData registro);
 
-void REG_criarBIN(FILE *outputBIN, regCabecalho *pRegCab, regDados **vetorRegDados, int TamanhoVetor);
+void REG_criarBIN(FILE *outputBIN, regHeader *pRegCab, regData **vetorregData, int TamanhoVetor);
 
-void REGDados_printBIN(FILE *BIN);
+int regData_printBIN(FILE *BIN);
 
-int REGDados_buscaReg(FILE *BIN, regDados *outputReg, int m, criterio testes[]);
+int regData_buscaReg(FILE *BIN, regData *outputReg, int m, criteria testes[]);
 
-void REGDados_printComInputDeCriterios(FILE *BIN);
+void regData_printComInputDecriterias(FILE *BIN);
 
 #endif

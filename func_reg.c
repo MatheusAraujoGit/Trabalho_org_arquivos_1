@@ -1,7 +1,7 @@
 #include "func_reg.h"
 
 // Eu uso fseek aqui pq de qualquer forma o cabecalho vai estar no comeco no arquivo
-void REGCab_escrever(FILE *outputBIN, regCabecalho *pRegCab)
+void REGCab_escrever(FILE *outputBIN, regHeader *pRegCab)
 {
     fseek(outputBIN, 0, SEEK_SET);
     fwrite(&(pRegCab->status), sizeof(char), 1, outputBIN);       // off 0
@@ -11,32 +11,32 @@ void REGCab_escrever(FILE *outputBIN, regCabecalho *pRegCab)
     fwrite(&(pRegCab->nParesEstacao), sizeof(int), 1, outputBIN); // off 13
 }
 
-void REGDados_escrever(FILE *outputBIN, regDados *pRegDados)
+void regData_escrever(FILE *outputBIN, regData *pregData)
 {
-    fwrite(&(pRegDados->removido), sizeof(char), 1, outputBIN);                         // off 0
-    fwrite(&(pRegDados->proxRRN), sizeof(int), 1, outputBIN);                           // off 1
-    fwrite(&(pRegDados->codEstacao), sizeof(int), 1, outputBIN);                        // off 5
-    fwrite(&(pRegDados->codLinha), sizeof(int), 1, outputBIN);                          // off 9
-    fwrite(&(pRegDados->codProxEstacao), sizeof(int), 1, outputBIN);                    // off 13
-    fwrite(&(pRegDados->distProxEstacao), sizeof(int), 1, outputBIN);                   // off 17
-    fwrite(&(pRegDados->codLinhaIntegra), sizeof(int), 1, outputBIN);                   // off 21
-    fwrite(&(pRegDados->codEstIntegra), sizeof(int), 1, outputBIN);                     // off 25
-    fwrite(&(pRegDados->tamNomeEstacao), sizeof(int), 1, outputBIN);                    // off 29
-    fwrite(pRegDados->nomeEstacao, sizeof(char), pRegDados->tamNomeEstacao, outputBIN); // varzea daqui para baixo
-    fwrite(&(pRegDados->tamNomeLinha), sizeof(int), 1, outputBIN);
-    fwrite(pRegDados->nomeLinha, sizeof(char), pRegDados->tamNomeLinha, outputBIN);
+    fwrite(&(pregData->removido), sizeof(char), 1, outputBIN);                         // off 0
+    fwrite(&(pregData->proxRRN), sizeof(int), 1, outputBIN);                           // off 1
+    fwrite(&(pregData->codEstacao), sizeof(int), 1, outputBIN);                        // off 5
+    fwrite(&(pregData->codLinha), sizeof(int), 1, outputBIN);                          // off 9
+    fwrite(&(pregData->codProxEstacao), sizeof(int), 1, outputBIN);                    // off 13
+    fwrite(&(pregData->distProxEstacao), sizeof(int), 1, outputBIN);                   // off 17
+    fwrite(&(pregData->codLinhaIntegra), sizeof(int), 1, outputBIN);                   // off 21
+    fwrite(&(pregData->codEstIntegra), sizeof(int), 1, outputBIN);                     // off 25
+    fwrite(&(pregData->tamNomeEstacao), sizeof(int), 1, outputBIN);                    // off 29
+    fwrite(pregData->nomeEstacao, sizeof(char), pregData->tamNomeEstacao, outputBIN); // varzea daqui para baixo
+    fwrite(&(pregData->tamNomeLinha), sizeof(int), 1, outputBIN);
+    fwrite(pregData->nomeLinha, sizeof(char), pregData->tamNomeLinha, outputBIN);
 
     // Preencher com lixo
     const char caracterLixo = '$';
     int tamanho_total = 0;
-    tamanho_total = sizeof(int) * 9 + sizeof(char) + pRegDados->tamNomeLinha + pRegDados->tamNomeEstacao;
+    tamanho_total = sizeof(int) * 9 + sizeof(char) + pregData->tamNomeLinha + pregData->tamNomeEstacao;
     for (int i = 0; i < 80 - tamanho_total; i++)
     {
         fwrite(&caracterLixo, sizeof(char), 1, outputBIN);
     }
 }
 
-void REGCab_ler(FILE *BIN, regCabecalho *pRegCab)
+void REGCab_ler(FILE *BIN, regHeader *pRegCab)
 {
     fseek(BIN, 0, SEEK_SET);
     fread(&(pRegCab->status), sizeof(char), 1, BIN);
@@ -49,67 +49,67 @@ void REGCab_ler(FILE *BIN, regCabecalho *pRegCab)
 // Retorna -1 se chegou no fim do arquivo
 // Retorna 0 se tentou ler registro removido
 // retorna 1 se deu certo
-int REGDados_ler(FILE *BIN, regDados *pRegDados)
+int regData_ler(FILE *BIN, regData *pregData)
 {
 
     // tratar casos de fim de arquivo e registro removido
-    char verificarFimDoArquivo = fread(&(pRegDados->removido), sizeof(char), 1, BIN);
+    char verificarFimDoArquivo = fread(&(pregData->removido), sizeof(char), 1, BIN);
     if (verificarFimDoArquivo != 1)
         return -1;
-    if (pRegDados->removido == 1)
+    if (pregData->removido == 1)
     {
         fseek(BIN, 79, SEEK_CUR); // pulo os 79 bytes restantes do registro removido
         return 0;
     }
 
-    fread(&(pRegDados->proxRRN), sizeof(int), 1, BIN);
-    fread(&(pRegDados->codEstacao), sizeof(int), 1, BIN);
-    fread(&(pRegDados->codLinha), sizeof(int), 1, BIN);
-    fread(&(pRegDados->codProxEstacao), sizeof(int), 1, BIN);
-    fread(&(pRegDados->distProxEstacao), sizeof(int), 1, BIN);
-    fread(&(pRegDados->codLinhaIntegra), sizeof(int), 1, BIN);
-    fread(&(pRegDados->codEstIntegra), sizeof(int), 1, BIN);
+    fread(&(pregData->proxRRN), sizeof(int), 1, BIN);
+    fread(&(pregData->codEstacao), sizeof(int), 1, BIN);
+    fread(&(pregData->codLinha), sizeof(int), 1, BIN);
+    fread(&(pregData->codProxEstacao), sizeof(int), 1, BIN);
+    fread(&(pregData->distProxEstacao), sizeof(int), 1, BIN);
+    fread(&(pregData->codLinhaIntegra), sizeof(int), 1, BIN);
+    fread(&(pregData->codEstIntegra), sizeof(int), 1, BIN);
 
     char bufferNome[128];
 
     // Nome da estacao
     // Ficou um pouco horroroso pq eu preciso previnir memory leak que aconteceria se eu só reescrevesse o ponteiro em nomeEstacao
     // Sem desalocar a string que ja exisita nele
-    fread(&(pRegDados->tamNomeEstacao), sizeof(int), 1, BIN);
-    if (pRegDados->tamNomeEstacao > 0)
+    fread(&(pregData->tamNomeEstacao), sizeof(int), 1, BIN);
+    if (pregData->tamNomeEstacao > 0)
     {
-        fread(bufferNome, sizeof(char), pRegDados->tamNomeEstacao, BIN);
-        bufferNome[pRegDados->tamNomeEstacao] = '\0';
-        if (pRegDados->nomeEstacao != NULL)
-            free(pRegDados->nomeEstacao);
-        pRegDados->nomeEstacao = strdup(bufferNome);
+        fread(bufferNome, sizeof(char), pregData->tamNomeEstacao, BIN);
+        bufferNome[pregData->tamNomeEstacao] = '\0';
+        if (pregData->nomeEstacao != NULL)
+            free(pregData->nomeEstacao);
+        pregData->nomeEstacao = strdup(bufferNome);
     }
     else
     {
-        if (pRegDados->nomeEstacao != NULL)
-            free(pRegDados->nomeEstacao);
-        pRegDados->nomeEstacao = strdup("");
+        if (pregData->nomeEstacao != NULL)
+            free(pregData->nomeEstacao);
+        pregData->nomeEstacao = strdup("");
     }
 
     // Nome da linha
-    fread(&(pRegDados->tamNomeLinha), sizeof(int), 1, BIN);
-    if (pRegDados->tamNomeLinha > 0)
+    fread(&(pregData->tamNomeLinha), sizeof(int), 1, BIN);
+    if (pregData->tamNomeLinha > 0)
     {
-        fread(bufferNome, sizeof(char), pRegDados->tamNomeLinha, BIN);
-        bufferNome[pRegDados->tamNomeLinha] = '\0';
-        if (pRegDados->nomeLinha != NULL)
-            free(pRegDados->nomeLinha);
-        pRegDados->nomeLinha = strdup(bufferNome);
+        fread(bufferNome, sizeof(char), pregData->tamNomeLinha, BIN);
+        bufferNome[pregData->tamNomeLinha] = '\0';
+        if (pregData->nomeLinha != NULL)
+            free(pregData->nomeLinha);
+        pregData->nomeLinha = strdup(bufferNome);
     }
     else
     {
-        if (pRegDados->nomeLinha != NULL)
-            free(pRegDados->nomeLinha);
-        pRegDados->nomeLinha = strdup("");
+        if (pregData->nomeLinha != NULL)
+            free(pregData->nomeLinha);
+        pregData->nomeLinha = strdup("");
     }
 
     // Compensar o lixo no resto do registro
-    int tamanho = 1 + sizeof(int) * 9 + pRegDados->tamNomeEstacao + pRegDados->tamNomeLinha;
+    int tamanho = 1 + sizeof(int) * 9 + pregData->tamNomeEstacao + pregData->tamNomeLinha;
     if ((80 - tamanho) > 0)
     {
         char descarta[80];
@@ -121,12 +121,12 @@ int REGDados_ler(FILE *BIN, regDados *pRegDados)
 
 // PRIMEIRA FUNCIONALIDADE
 // eu estou usando ponteiro para cabecalho para parear o cabecalho no arquivo e na memoria
-void REG_criarBIN(FILE *outputBIN, regCabecalho *pRegCab, regDados **vetorRegDados, int TamanhoVetor)
+void REG_criarBIN(FILE *outputBIN, regHeader *pRegCab, regData **vetorregData, int TamanhoVetor)
 {
     REGCab_escrever(outputBIN, pRegCab);
     for (int i = 0; i < TamanhoVetor; i++)
     {
-        REGDados_escrever(outputBIN, vetorRegDados[i]);
+        regData_escrever(outputBIN, vetorregData[i]);
     }
     // agora que eu terminei de escrever eu ajusto o status
     fseek(outputBIN, 0, SEEK_SET);
@@ -137,7 +137,7 @@ void REG_criarBIN(FILE *outputBIN, regCabecalho *pRegCab, regDados **vetorRegDad
 }
 
 // funcoes auxiliares para o printDados nao ficar gigante
-void REGDados_printInt(int input)
+void regData_printInt(int input)
 {
     char nulo[] = "NULO";
     if (input == -1)
@@ -146,7 +146,7 @@ void REGDados_printInt(int input)
         printf("%d ", input);
 }
 
-void REGDados_printString(char *string)
+void regData_printString(char *string)
 {
     char nulo[] = "NULO";
     if (strcmp(string, "") == 0)
@@ -155,43 +155,39 @@ void REGDados_printString(char *string)
         printf("%s ", string);
 }
 
-void REGDados_printDados(regDados registro)
+void regData_printDados(regData registro)
 {
-    REGDados_printInt(registro.codEstacao);
-    REGDados_printString(registro.nomeEstacao);
-    REGDados_printInt(registro.codLinha);
-    REGDados_printString(registro.nomeLinha);
-    REGDados_printInt(registro.codProxEstacao);
-    REGDados_printInt(registro.distProxEstacao);
-    REGDados_printInt(registro.codLinhaIntegra);
-    REGDados_printInt(registro.codEstIntegra);
+    regData_printInt(registro.codEstacao);
+    regData_printString(registro.nomeEstacao);
+    regData_printInt(registro.codLinha);
+    regData_printString(registro.nomeLinha);
+    regData_printInt(registro.codProxEstacao);
+    regData_printInt(registro.distProxEstacao);
+    regData_printInt(registro.codLinhaIntegra);
+    regData_printInt(registro.codEstIntegra);
     printf("\n");
 }
 
 // SEGUNDA FUNCIONALIDADE
-void REGDados_printBIN(FILE *BIN)
+int regData_printBIN(FILE *BIN)
 {
-    regCabecalho tempCab;
-    regDados tempDados;
+    regHeader tempCab;
+    regData tempDados;
 
     tempDados.nomeEstacao = NULL;
     tempDados.nomeLinha = NULL;
     REGCab_ler(BIN, &tempCab);
 
-    if (tempCab.status == '0')
-    {
-        printf("Falha no processamento do arquivo.\n");
-        return;
-    }
+    if (tempCab.status == '0') return -1;
 
     char leuUm = 0;
     int flag = 1;
     while (flag != -1)
     {
-        flag = REGDados_ler(BIN, &tempDados);
+        flag = regData_ler(BIN, &tempDados);
         if (flag == 1)
         {
-            REGDados_printDados(tempDados);
+            regData_printDados(tempDados);
             leuUm = 1;
         }
         // Se flag == 0 significa que tentou ler um registro removido
@@ -199,10 +195,7 @@ void REGDados_printBIN(FILE *BIN)
     }
 
     // Verificar se leu nenhum registro
-    if (leuUm == 0)
-    {
-        printf("Registro inexistente.\n");
-    }
+    if (leuUm == 0) return 0;
 
     free(tempDados.nomeEstacao);
     free(tempDados.nomeLinha);
@@ -211,8 +204,8 @@ void REGDados_printBIN(FILE *BIN)
 // Funcao auxiliar para a buscaReg
 // 1 se passou, 0 se não passou
 // Que funçao feia meu deus
-// Valor nulo de string dentro do criterio é "" igual ao valor nulo de string na memoria
-char REGDados_testeCriterio(regDados registro, criterio teste)
+// Valor nulo de string dentro do criteria é "" igual ao valor nulo de string na memoria
+char regData_testecriteria(regData registro, criteria teste)
 {
 
     if (strcmp(teste.nomeCampo, "codEstacao") == 0)
@@ -256,29 +249,29 @@ char REGDados_testeCriterio(regDados registro, criterio teste)
     }
 }
 
-// Procura por um registro que atende todos os criterios e retorna a posicao dele no bin
+// Procura por um registro que atende todos os criterias e retorna a posicao dele no bin
 // e copia o conteudo dele para o outputReg na memoria
 // Começa a procurar a partir da posicao atual do ponteiro do arquivo e move ele para frente
 // tambem supoe que ja tenha passado pelo cabecalho
 // retorna -1 se nao achou nada(fim de arquivo)
-int REGDados_buscaReg(FILE *BIN, regDados *outputReg, int m, criterio testes[])
+int regData_buscaReg(FILE *BIN, regData *outputReg, int m, criteria testes[])
 {
     int achou = 0;
     while (achou == 0)
     {
-        int flag = REGDados_ler(BIN, outputReg);
+        int flag = regData_ler(BIN, outputReg);
         switch (flag)
         {
         case -1: // fim de arquivo
             return -1;
         case 0: // Achou um registro removido
             continue;
-        case 1: // leu um registro, testar criterios
+        case 1: // leu um registro, testar criterias
             char falhou = 0;
 
             for (int i = 0; i < m; i++)
             {
-                if (REGDados_testeCriterio(*outputReg, testes[i]) == 0)
+                if (regData_testecriteria(*outputReg, testes[i]) == 0)
                 {
                     falhou = 1;
                     break;
@@ -294,10 +287,10 @@ int REGDados_buscaReg(FILE *BIN, regDados *outputReg, int m, criterio testes[])
 }
 
 // Essa funcao eu fiz direto com o input do terminal pq eu nao sei como separar a parte do print e da busca sem enlouquecer com alocacao dinamica
-void REGDados_printComInputDeCriterios(FILE *BIN)
+void regData_printComInputDecriterias(FILE *BIN)
 {
 
-    regCabecalho tempCab;
+    regHeader tempCab;
 
     REGCab_ler(BIN, &tempCab);
 
@@ -318,9 +311,9 @@ void REGDados_printComInputDeCriterios(FILE *BIN)
         int m;
         scanf("%d", &m); // Quantidade de filtros para busca
 
-        criterio *testes = (criterio *)malloc(m * sizeof(criterio));
+        criteria *testes = (criteria *)malloc(m * sizeof(criteria));
 
-        // For para ler os criterios e colocar eles no vetor
+        // For para ler os criterias e colocar eles no vetor
         for (int j = 0; j < m; j++)
         {
             scanf("%s", testes[j].nomeCampo);
@@ -344,21 +337,21 @@ void REGDados_printComInputDeCriterios(FILE *BIN)
         }
 
         // A partir daqui eu tenho todos os testes prontos e posso começar a buscar
-        regDados tempReg;
+        regData tempReg;
         tempReg.nomeEstacao = NULL;
         tempReg.nomeLinha = NULL;
 
         int encontrouAlgum = 0;
         int flag;
 
-        while ((flag = REGDados_ler(BIN, &tempReg)) != -1)
+        while ((flag = regData_ler(BIN, &tempReg)) != -1)
         {
             if (flag == 1) // achou um registro valido
             {
                 int passouTodos = 1;
                 for (int k = 0; k < m; k++)
                 {
-                    if (REGDados_testeCriterio(tempReg, testes[k]) == 0)
+                    if (regData_testecriteria(tempReg, testes[k]) == 0)
                     {
                         passouTodos = 0;
                         break;
@@ -367,7 +360,7 @@ void REGDados_printComInputDeCriterios(FILE *BIN)
 
                 if (passouTodos)
                 {
-                    REGDados_printDados(tempReg);
+                    regData_printDados(tempReg);
                     encontrouAlgum = 1;
                 }
             }

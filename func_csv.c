@@ -67,9 +67,9 @@ int CSV_lerIntCampo(char *linha, int nCampo)
 
 // Funçao auxiliar que retorna ponteiro para um registro de dados alocado dinamicamente
 // dados desse registro vem de uma linha do csv
-regDados *CSV_registroPorLinha(char *linha)
+regData *CSV_registroPorLinha(char *linha)
 {
-    regDados *regOutput = (regDados *)malloc(sizeof(regDados));
+    regData *regOutput = (regData *)malloc(sizeof(regData));
 
     // Dados faceis
     regOutput->removido = 0;
@@ -98,7 +98,7 @@ regDados *CSV_registroPorLinha(char *linha)
     return regOutput;
 }
 
-void CSV_cabecalhoCriar(FILE *inputCSV, regCabecalho *inputCab)
+void CSV_cabecalhoCriar(FILE *inputCSV, regHeader *inputCab)
 {
     // Inicializando
     fseek(inputCSV, 0, SEEK_SET);
@@ -220,8 +220,8 @@ void CSV_cabecalhoCriar(FILE *inputCSV, regCabecalho *inputCab)
     inputCab->nParesEstacao = acum / 2;
 }
 
-// Vou retornar um vetor dinâmico de ponteiros para regDados e escrever o tamanho dele no TamanhoVetor
-regDados **CSV_criarVetorRegDados(FILE *inputCSV, int *TamanhoVetor)
+// Vou retornar um vetor dinâmico de ponteiros para regData e escrever o tamanho dele no TamanhoVetor
+regData **CSV_criarVetorregData(FILE *inputCSV, int *TamanhoVetor)
 {
     *TamanhoVetor = 0;
     char linha[512];
@@ -235,7 +235,7 @@ regDados **CSV_criarVetorRegDados(FILE *inputCSV, int *TamanhoVetor)
     }
 
     // Aloco o vetor de registros de dados
-    regDados **vetorOutput = (regDados **)malloc((*TamanhoVetor) * sizeof(regDados *));
+    regData **vetorOutput = (regData **)malloc((*TamanhoVetor) * sizeof(regData *));
 
     // Volto para o começo do arquivo para agora popular o vetor com os registros
     fseek(inputCSV, 0, SEEK_SET);
@@ -250,8 +250,8 @@ regDados **CSV_criarVetorRegDados(FILE *inputCSV, int *TamanhoVetor)
     return vetorOutput;
 }
 
-// Desalocar toda a memoria do vetorRegDados
-void CSV_apagarVetorRegDados(regDados **VetorDados, int TamanhoVetor)
+// Desalocar toda a memoria do vetorregData
+void CSV_apagarVetorregData(regData **VetorDados, int TamanhoVetor)
 {
     // Preciso desalocar as strings tambem, pq eu aloquei elas dinamicamente
     for (int i = 0; i < TamanhoVetor; i++)

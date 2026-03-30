@@ -8,10 +8,10 @@
 
 // Ver comentarios no .c
 
-void CSV_cabecalhoCriar(FILE *inputCSV, regCabecalho *inputCab);
+void CSV_cabecalhoCriar(FILE *inputCSV, regHeader *inputCab);
 
-regDados **CSV_criarVetorRegDados(FILE *inputCSV, int *TamanhoVetor);
+regData **CSV_criarVetorregData(FILE *inputCSV, int *TamanhoVetor);
 
-void CSV_apagarVetorRegDados(regDados **VetorDados, int TamanhoVetor);
+void CSV_apagarVetorregData(regData **VetorDados, int TamanhoVetor);
 
 #endif
