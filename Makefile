@@ -1,10 +1,10 @@
-all: func_reg.o func_csv.o main.o
-	gcc func_reg.o func_csv.o main.o -o programTrab
+all: func_reg.o func_csv.o fornecidas.o main.o
+	gcc func_reg.o func_csv.o fornecidas.o main.o -o programTrab
 	rm *.o
 
 
-all_windows: func_reg.o func_csv.o main.o
-	gcc func_reg.o func_csv.o main.o -o programTrab
+all_windows: func_reg.o func_csv.o fornecidas.o main.o
+	gcc func_reg.o func_csv.o fornecidas.o main.o -o programTrab
 	del *.o
 
 func_reg.o:
@@ -12,6 +12,9 @@ func_reg.o:
 
 func_csv.o:
 	gcc -c func_csv.c
+
+fornecidas.o:
+	gcc -c fornecidas.c
 
 main.o:
 	gcc -c main.c

@@ -15,20 +15,17 @@ int main()
     int option = -1;
     bool error_flag = false;
 
-    regHeader head;
-    int dataCount= 0;
-    regData **dataVector;
 
-
+    //TO-DO colocar esses cases como funcoes separadas em um header
     while(option != 0 && error_flag == false){
-        scanf("%d ", &option);
+        scanf("%d", &option);
         switch(option){
             
             case 1: // funcionalidade 1: ler um csv e converter para binário
 
                 //ler e validar nomes de arquivos
-                scanf("%s ", csv_name);
-                scanf("%s ", bin_name);
+                scanf("%s", csv_name);
+                scanf("%s", bin_name);
                 inputCSV = fopen(csv_name, "r");
                 outputBIN = fopen(bin_name, "rb+");
 
@@ -40,26 +37,29 @@ int main()
                     outputBIN = fopen(bin_name, "wb+");
                 }
 
-                //TO-DO: não devemos armazenar todos os dados num vetor na memória;
-                //devemos ler os registros do csv um por um na memória em quanto os escrevemos no arquivo, de modo a so ter um na memória por vez
-
-                CSV_cabecalhoCriar(inputCSV, &head);
-                dataVector = CSV_criarVetorregData(inputCSV, &dataCount);
-                REG_criarBIN(outputBIN, &head, dataVector, dataCount);
-                CSV_apagarVetorregData(dataVector, dataCount);
+                CSV_createBIN(inputCSV, outputBIN);
 
                 fclose(inputCSV);
                 fclose(outputBIN);
 
-                //TO-DO: binario na tela não está imprimindo o valor esperado; estamos guardando errado?
                 BinarioNaTela(bin_name);
+
+                regHeader_setFileConsistent(bin_name);
 
             break;
 
             case 2: // funcionalidade 2: ler um binario e o printar na tela
+                    // só consegue ler arquivos consistentes
                 
-                //TO-DO: função dá segfault - estou usando ela certo?
+                scanf("%s", bin_name);
+                outputBIN = fopen(bin_name, "rb+");
+
+                if(outputBIN == NULL){
+                    outputBIN = fopen(bin_name, "wb+");
+                }
+
                 fseek(outputBIN, 0, SEEK_SET);
+
                 int status = regData_printBIN(outputBIN);
                 if(status == -1){
                     error_flag = true;
@@ -69,8 +69,16 @@ int main()
 
             break;
 
-            case 3:
-            printf("funcão ainda não implementada! \n");
+            case 3: //Teste da funcionalidade 3
+                    //Pelo visto esta funcionando
+                scanf("%s", bin_name);
+                outputBIN = fopen(bin_name, "rb+");
+
+                if(outputBIN == NULL){
+                    outputBIN = fopen(bin_name, "wb+");
+                }
+
+                regData_printWithInputCriteria(outputBIN);
             break;
 
             case 4:

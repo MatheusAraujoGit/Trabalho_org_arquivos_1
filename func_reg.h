@@ -4,6 +4,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include "fornecidas.h"
 
 // Deixei os structs expostos para ter menos dor de cabeça
 
@@ -45,18 +46,18 @@ typedef struct
     char valorString[128];
 } criteria;
 
-void regData_escrever(FILE *outputBIN, regData *pregData);
+void regHeader_setFileConsistent(char* fileName);
 
-void REGCab_escrever(FILE *outputBIN, regHeader *pRegCab);
+void regData_write(FILE *outputBIN, regData *pregData);
 
-void regData_printDados(regData registro);
+void regHeader_write(FILE *outputBIN, regHeader *pRegCab);
 
-void REG_criarBIN(FILE *outputBIN, regHeader *pRegCab, regData **vetorregData, int TamanhoVetor);
+void regData_printData(regData registro);
 
 int regData_printBIN(FILE *BIN);
 
-int regData_buscaReg(FILE *BIN, regData *outputReg, int m, criteria testes[]);
+int regData_searchReg(FILE *BIN, regData *outputReg, int m, criteria tests[]);
 
-void regData_printComInputDecriterias(FILE *BIN);
+void regData_printWithInputCriteria(FILE *BIN);
 
 #endif
