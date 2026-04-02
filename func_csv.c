@@ -36,7 +36,7 @@ void CSV_readStringField(char outputVetor[], char *line, int fieldNumber){
     char *pChar = outputVetor;
     while (*pChar != '\0')
     {
-        if (*pChar == ',' || *pChar == '\n')
+        if (*pChar == ',' || *pChar == '\n' || *pChar == '\r')
             *pChar = '\0'; // Com essa parte aqui "Ana Rosa,300..." vira "Ana Rosa\0300..."
         
         pChar++;

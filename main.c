@@ -15,7 +15,6 @@ int main()
     int option = -1;
     bool error_flag = false;
 
-
     //TO-DO colocar esses cases como funcoes separadas em um header
     while(option != 0 && error_flag == false){
         scanf("%d", &option);
@@ -42,9 +41,10 @@ int main()
                 fclose(inputCSV);
                 fclose(outputBIN);
 
+                regHeader_setFileConsistent(bin_name);
+
                 BinarioNaTela(bin_name);
 
-                regHeader_setFileConsistent(bin_name);
 
             break;
 
