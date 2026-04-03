@@ -1,12 +1,17 @@
 #include "func_reg.h"
 
-//só abre o arquivo e coloca ele como consistente
-void regHeader_setFileConsistent(char* fileName){
-    FILE* file = fopen(fileName, "rb+");
+//pega um arquivo já aberto e coloca ele como consistente
+void regHeader_setFileConsistent(FILE* file){
     fseek(file, 0, SEEK_SET);
     const char consistent = '1';
     fwrite(&consistent, sizeof(char), 1, file);
-    fclose(file);
+}
+
+//pega um arquivo já aberto e coloca ele como inconsistente
+void regHeader_setFileInconsistent(FILE* file){
+    fseek(file, 0, SEEK_SET);
+    const char inconsistent = '0';
+    fwrite(&inconsistent, sizeof(char), 1, file);
 }
 
 // Eu uso fseek aqui pq de qualquer forma o cabecalho vai estar no comeco no arquivo
@@ -21,7 +26,7 @@ void regHeader_write(FILE *outputBIN, regHeader *pRegHeader){
 
 void regData_write(FILE *outputBIN, regData *pregData){
     fwrite(&(pregData->removido), sizeof(char), 1, outputBIN);                         // off 0
-    fwrite(&(pregData->proxRRN), sizeof(int), 1, outputBIN);                           // off 1
+    fwrite(&(pregData->proxRemovido), sizeof(int), 1, outputBIN);                           // off 1
     fwrite(&(pregData->codEstacao), sizeof(int), 1, outputBIN);                        // off 5
     fwrite(&(pregData->codLinha), sizeof(int), 1, outputBIN);                          // off 9
     fwrite(&(pregData->codProxEstacao), sizeof(int), 1, outputBIN);                    // off 13
@@ -29,7 +34,7 @@ void regData_write(FILE *outputBIN, regData *pregData){
     fwrite(&(pregData->codLinhaIntegra), sizeof(int), 1, outputBIN);                   // off 21
     fwrite(&(pregData->codEstIntegra), sizeof(int), 1, outputBIN);                     // off 25
     fwrite(&(pregData->tamNomeEstacao), sizeof(int), 1, outputBIN);                    // off 29
-    fwrite(pregData->nomeEstacao, sizeof(char), pregData->tamNomeEstacao, outputBIN); // varzea daqui para baixo
+    fwrite(pregData->nomeEstacao, sizeof(char), pregData->tamNomeEstacao, outputBIN);  // varzea daqui para baixo
     fwrite(&(pregData->tamNomeLinha), sizeof(int), 1, outputBIN);
     fwrite(pregData->nomeLinha, sizeof(char), pregData->tamNomeLinha, outputBIN);
 
@@ -43,7 +48,7 @@ void regData_write(FILE *outputBIN, regData *pregData){
     }
 }
 
-void REGCab_ler(FILE *BIN, regHeader *pRegHeader){
+void regHeader_read(FILE *BIN, regHeader *pRegHeader){
     fseek(BIN, 0, SEEK_SET);
     fread(&(pRegHeader->status), sizeof(char), 1, BIN);
     fread(&(pRegHeader->topo), sizeof(int), 1, BIN);
@@ -61,12 +66,12 @@ int regData_read(FILE *BIN, regData *pregData){
     char verificarFimDoArquivo = fread(&(pregData->removido), sizeof(char), 1, BIN);
     if (verificarFimDoArquivo != 1)
         return -1;
-    if (pregData->removido == 1){
+    if (pregData->removido == '1'){
         fseek(BIN, 79, SEEK_CUR); // pulo os 79 bytes restantes do registro removido
         return 0;
     }
 
-    fread(&(pregData->proxRRN), sizeof(int), 1, BIN);
+    fread(&(pregData->proxRemovido), sizeof(int), 1, BIN);
     fread(&(pregData->codEstacao), sizeof(int), 1, BIN);
     fread(&(pregData->codLinha), sizeof(int), 1, BIN);
     fread(&(pregData->codProxEstacao), sizeof(int), 1, BIN);
@@ -154,7 +159,7 @@ int regData_printBIN(FILE *BIN){
 
     tempData.nomeEstacao = NULL;
     tempData.nomeLinha = NULL;
-    REGCab_ler(BIN, &tempHead);
+    regHeader_read(BIN, &tempHead);
 
     if (tempHead.status == '0') return -1;
 
@@ -249,16 +254,14 @@ int regData_searchReg(FILE *BIN, regData *outputReg, int m, criteria tests[]){
 }
 
 // Essa funcao eu fiz direto com o input do terminal pq eu nao sei como separar a parte do print e da busca sem enlouquecer com alocacao dinamica
-void regData_printWithInputCriteria(FILE *BIN){
+int regData_printWithInputCriteria(FILE *BIN){
 
     regHeader tempHead;
 
-    REGCab_ler(BIN, &tempHead);
+    regHeader_read(BIN, &tempHead);
 
-    if (tempHead.status == '0'){
-        printf("Falha no processamento do arquivo.\n");
-        return;
-    }
+    if (tempHead.status == '0') return -1;
+
 
     int n = 0;
     scanf("%d", &n);
@@ -327,7 +330,236 @@ void regData_printWithInputCriteria(FILE *BIN){
         if (!foundOne){
             printf("Registro inexistente.\n");
         }
+        printf("\n");
     }
 
-    return;
+    return 0;
+}
+
+//vai para o registro em RRN e o seta como deletado;
+//seta seu proxRemovido para o topo do cabecalho;
+//seta o topo do cabecalho para ele
+int regData_DeleteRegistry(FILE* BIN, int RRN){
+    regHeader tempHead;
+    regData tempData;
+    tempData.nomeEstacao = NULL;
+    tempData.nomeLinha = NULL;
+
+    regHeader_read(BIN, &tempHead);
+    if (tempHead.status == '0') return -1;
+
+    fseek(BIN, 17+80*RRN, SEEK_SET);
+    int status = regData_read(BIN, &tempData);
+    if(status != 1) return status;
+
+    tempData.removido = '1';
+    tempData.proxRemovido = tempHead.topo;
+    tempHead.nParesEstacao--;   //Como os pares de estacao sao baseados por id, posso subtrair aqui
+                                //Porem o nEstacoes é baseado por nome, entao tenho que recalcular
+
+    fseek(BIN, -80, SEEK_CUR);
+    regData_write(BIN, &tempData);
+    
+    tempHead.topo = RRN;
+    long currentPos = ftell(BIN);
+    regHeader_write(BIN, &tempHead);    //Essa funcao move o ponteiro entao preciso salvar a posicao atual
+    fseek(BIN, currentPos, SEEK_SET);
+
+    if (tempData.nomeEstacao != NULL) free(tempData.nomeEstacao);
+    if (tempData.nomeLinha != NULL) free(tempData.nomeLinha);
+
+    return status;
+}
+
+//funçao copypastada e editada do searchReg que deleta ao encontrar
+int regData_searchAndDeleteReg(FILE *BIN, regData *outputReg, int m, criteria tests[]){
+    int foundOne = 0;
+    while (foundOne == 0){
+        int flag = regData_read(BIN, outputReg);
+        switch (flag){
+        case -1: // fim de arquivo
+            return -1;
+        case 0: // Achou um registro removido
+            continue;
+        case 1: // leu um registro, testar criterias
+            char failed = 0;
+
+            for (int i = 0; i < m; i++){
+                if (regData_testCriteria(*outputReg, tests[i]) == 0){
+                    failed = 1;
+                    break;
+                }
+            }
+
+            if (failed == 0){
+                foundOne = 1;
+                int RRN = ((ftell(BIN) - 17) / 80) - 1;
+                regData_DeleteRegistry(BIN, RRN);
+            }
+
+            break;
+        }
+    }
+    return 1;
+}
+
+//aux: converter uma string pra um int usando o hash FNV-1a (pra melhorar comparação de strings depois)
+int fnv1a_hash(const char* str) {
+    int hash = 2166136261; // FNV offset basis
+    while (*str) {
+        hash ^= *str++;
+        hash *= 16777619; // FNV prime
+    }
+    return hash;
+}
+
+//Recalculo o nEstacoes, ja que ele é baseado por nome
+//Baseado no CSV_createHeader
+void regHeader_recalculateNEstacoes(FILE* BIN){
+    regHeader tempHead;
+    regData tempData;
+
+    tempData.nomeEstacao = NULL;
+    tempData.nomeLinha = NULL;
+
+    regHeader_read(BIN, &tempHead);
+    tempHead.nEstacoes = 0;
+
+    int capacity = 10;
+    int* nomesUnicos = malloc(capacity*sizeof(int));
+    int flag;
+    while( (flag = regData_read(BIN, &tempData)) != -1){
+        if (flag == 1){    //flag == 1 significa registro valido
+
+        // Verificar se ja existe com hash
+        int hash = fnv1a_hash(tempData.nomeEstacao);
+        char jaExiste = 0;
+
+        for(int i = 0; i< tempHead.nEstacoes; i++){
+            if (nomesUnicos[i] == hash){
+                jaExiste = 1;
+                break;
+            }
+        }
+
+        // Se nao existe, aloco mais memoria pro array e conto uma estação a mais
+        if (jaExiste == 0){
+            if (tempHead.nEstacoes >= capacity) {
+            capacity *= 2;
+            nomesUnicos = realloc(nomesUnicos, capacity * sizeof(int));
+            }
+
+            nomesUnicos[tempHead.nEstacoes] = hash;
+            tempHead.nEstacoes += 1;
+            }
+        }
+
+        if (tempData.nomeEstacao != NULL){
+            free(tempData.nomeEstacao); 
+            tempData.nomeEstacao = NULL;
+        }
+        if (tempData.nomeLinha != NULL){
+            free(tempData.nomeLinha); 
+            tempData.nomeLinha = NULL;
+        }
+
+    }
+
+    //Escrevo o novo Header
+    regHeader_write(BIN, &tempHead);
+
+    //Desaloco memoria do TempData
+    if (tempData.nomeEstacao != NULL)
+        free(tempData.nomeEstacao);
+    if (tempData.nomeLinha != NULL)
+        free(tempData.nomeLinha);
+}
+
+// funçao copiada e ediatada do printWithInputCriteria
+int regData_deleteWithInputCriteria(FILE *BIN){
+
+    regHeader tempHead;
+
+    regHeader_read(BIN, &tempHead);
+
+    if (tempHead.status == '0') return -1;
+
+    int n = 0;
+    scanf("%d", &n);
+
+    // Esse for itera pelas diferentes buscas
+    char removedAtLeastOne = 0;
+    for (int i = 0; i < n; i++){
+        fseek(BIN, 17, SEEK_SET); // volto para o comeco depois do cabecalho
+
+        int m;
+        scanf("%d", &m); // Quantidade de filtros para busca
+
+        criteria *tests = (criteria *)malloc(m * sizeof(criteria));
+
+        // For para ler os criterias e colocar eles no vetor
+        for (int j = 0; j < m; j++){
+            scanf("%s", tests[j].nomeCampo);
+
+            if (strcmp(tests[j].nomeCampo, "nomeEstacao") == 0 || strcmp(tests[j].nomeCampo, "nomeLinha") == 0){
+                ScanQuoteString(tests[j].valorString);
+                if (strcmp(tests[j].valorString, "NULO") == 0)
+                    strcpy(tests[j].valorString, "");
+            }
+            else{
+                char temp[128];
+                scanf("%s", temp);
+                if (strcmp(temp, "NULO") == 0)
+                    tests[j].valorInt = -1;
+                else
+                    tests[j].valorInt = atoi(temp);
+            }
+        }
+
+        // A partir daqui eu tenho todos os testes prontos e posso começar a buscar
+        regData tempReg;
+        tempReg.nomeEstacao = NULL;
+        tempReg.nomeLinha = NULL;
+
+        int foundOne = 0;
+        int flag;
+
+        while ((flag = regData_read(BIN, &tempReg)) != -1){
+            if (flag == 1){ // achou um registro valido
+                int passedAllTests = 1;
+                for (int k = 0; k < m; k++){
+                    if (regData_testCriteria(tempReg, tests[k]) == 0){
+                        passedAllTests = 0;
+                        break;
+                    }
+                }
+
+                if (passedAllTests){
+                    // como executou o regData_read, o ponteiro de arquivo esta no proximo registro, entao compenso subtraindo 1
+                    int RRN = ((ftell(BIN)-17)/80 ) - 1;
+                    regData_DeleteRegistry(BIN, RRN);
+                    foundOne = 1;
+                    removedAtLeastOne = 1;
+                }
+            }
+        }
+
+        // Liberar a memoria que esta no tempReg
+        if (tempReg.nomeEstacao != NULL)
+            free(tempReg.nomeEstacao);
+        if (tempReg.nomeLinha != NULL)
+            free(tempReg.nomeLinha);
+
+        free(tests);
+
+        if (!foundOne){
+            printf("Registro inexistente.\n");
+        }
+    }
+    
+    //Preciso recalcular o nEstacoes ja que ele é baseado por nome
+    if(removedAtLeastOne)
+        regHeader_recalculateNEstacoes(BIN);
+
+    return 0;
 }

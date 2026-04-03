@@ -6,8 +6,7 @@
 #include <string.h>
 #include "fornecidas.h"
 
-// Deixei os structs expostos para ter menos dor de cabeça
-
+//struct pra registro de header
 typedef struct
 {
     char status; // 0 inconsistente, 1 consistente
@@ -17,14 +16,14 @@ typedef struct
     int nParesEstacao;
 } regHeader;
 
-// Dados
+// struct pra registro de dado
 // strings de nome sao alocadas dinamicamente na memoria
 // e tambem strings nulas NA MEMORIA sao "", pq eu acho que dario erro de null pointer no fread e no fwrite se eu colocasse NULL direto
 // mas eu NAO escrevo "" no arquivo, como o tamanho da string sem o \0 é 0 eu escrevo 0 bytes no arquivo
 typedef struct
 {
     char removido;
-    int proxRRN; // proximo registro removido para o funcionamento da pilha de removidos
+    int proxRemovido; // proximo registro removido para o funcionamento da pilha de removidos
     int codEstacao;
     int codLinha;
     int codProxEstacao;
@@ -46,7 +45,9 @@ typedef struct
     char valorString[128];
 } criteria;
 
-void regHeader_setFileConsistent(char* fileName);
+void regHeader_setFileConsistent(FILE *file);
+
+void regHeader_setFileInconsistent(FILE *file);
 
 void regData_write(FILE *outputBIN, regData *pregData);
 
@@ -58,6 +59,10 @@ int regData_printBIN(FILE *BIN);
 
 int regData_searchReg(FILE *BIN, regData *outputReg, int m, criteria tests[]);
 
-void regData_printWithInputCriteria(FILE *BIN);
+int regData_printWithInputCriteria(FILE *BIN);
+
+int regData_DeleteRegistry(FILE* BIN, int RRN);
+
+int regData_deleteWithInputCriteria(FILE *BIN);
 
 #endif

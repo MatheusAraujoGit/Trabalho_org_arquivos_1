@@ -61,7 +61,7 @@ regData CSV_registerPerLine(char *line){
 
     // Dados faceis
     regOutput.removido = '0';
-    regOutput.proxRRN = -1;
+    regOutput.proxRemovido = -1;
     regOutput.codEstacao = CSV_readIntField(line, 1);
     regOutput.codLinha = CSV_readIntField(line, 3);
     regOutput.codProxEstacao = CSV_readIntField(line, 5);
@@ -86,8 +86,18 @@ regData CSV_registerPerLine(char *line){
     return regOutput;
 }
 
+//aux: converter uma string pra um int usando o hash FNV-1a (pra melhorar comparação de strings depois)
+int CSV_fnv1a_hash(const char* str) {
+    int hash = 2166136261; // FNV offset basis
+    while (*str) {
+        hash ^= *str++;
+        hash *= 16777619; // FNV prime
+    }
+    return hash;
+}
+
 void CSV_createHeader(FILE *inputCSV, regHeader *inputHeader){
-    // Inicializando
+    //inicializando como inconsistente
     fseek(inputCSV, 0, SEEK_SET);
     inputHeader->status = '0';
     inputHeader->topo = -1;
@@ -100,49 +110,38 @@ void CSV_createHeader(FILE *inputCSV, regHeader *inputHeader){
 
     fgets(line, sizeof(line), inputCSV); // para pular a primeira linha
 
-    // Obter numero de estacoes
+    // Obter numero de estacoes (usando hash table)
+    int capacity = 10;
+    int* nomesUnicos = malloc(capacity*sizeof(int));
 
-    // Vou inicializar o array onde vou colocar os nomes
-    // Solucao meio nuclear eu alocar tantos bytes para isso mas funciona
-    char *nomesUnicos[512];
-    for (int i = 0; i < 512; i++){
-        nomesUnicos[i] = NULL;
-    }
-
-    // Colocar nomes unicos em no array
+    // Colocar nomes unicos hasheados no array
     while (fgets(line, sizeof(line), inputCSV) != NULL){
         CSV_readStringField(field, line, 2); // Ler
 
         // Verificar se ja existe
-        int i = 0;
+        int hash = CSV_fnv1a_hash(field);
         char jaExiste = 0;
-        while (nomesUnicos[i] != NULL){
-            if (strcmp(field, nomesUnicos[i]) == 0){
+
+        for(int i = 0; i< inputHeader->nEstacoes; i++){
+            if (nomesUnicos[i] == hash){
                 jaExiste = 1;
                 break;
             }
-            i++;
         }
 
-        // Se nao existe escrevo no array
-        if (jaExiste == 0)
-            nomesUnicos[i] = strdup(field); // strdup aloca dinamicamente a string
-        
+        // Se nao existe, aloco mais memoria pro array e conto uma estação a mais
+        if (jaExiste == 0){
+            if (inputHeader->nEstacoes >= capacity) {
+            capacity *= 2;
+            nomesUnicos = realloc(nomesUnicos, capacity * sizeof(int));
+            }
+
+            nomesUnicos[inputHeader->nEstacoes] = hash;
+            inputHeader->nEstacoes += 1;
+        }
     }
 
-    // agora eu conto quantos nomes existem em nomesUnicos[]
-    int i = 0;
-    while (nomesUnicos[i] != NULL){
-        inputHeader->nEstacoes += 1;
-        i++;
-    }
-
-    // Liberar memoria
-    i = 0;
-    while (nomesUnicos[i] != NULL){
-        free(nomesUnicos[i]);
-        i++;
-    }
+    free(nomesUnicos);
 
     // Agora contar numero de pares
     // No aulao disseram que o grafo das estacoes era nao direcional ( (A,B) = (B,A)) e baseado em ids
@@ -214,16 +213,16 @@ void CSV_createBIN(FILE* inputCSV, FILE* outputBIN){
 
     char lineBuffer[512];
 
+    //header já é inicializado como inconsistente
     CSV_createHeader(inputCSV, &tempHeader);
     fseek(inputCSV, 0, SEEK_SET);
     fseek(outputBIN, 0, SEEK_SET);
     regHeader_write(outputBIN, &tempHeader);
-
 
     fgets(lineBuffer, sizeof(lineBuffer), inputCSV);
     while(fgets(lineBuffer, sizeof(lineBuffer), inputCSV) != NULL){
         tempReg = CSV_registerPerLine(lineBuffer);
         regData_write(outputBIN, &tempReg);
     }
-
+    regHeader_setFileConsistent(outputBIN);
 }
