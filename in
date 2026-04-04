@@ -1,3 +1,2 @@
-5 estacoes.bin 2
-500 "Luz" 20 "Azul" 10 200 NULO NULO
-501 "Luz" 45 "Vermelha" NULO NULO NULO NULO
+5 estacoes_removidos.bin 1
+561 "Se" 30 "Lilas" 20 300 41 301

@@ -65,13 +65,7 @@ int regData_DeleteRegistry(FILE* BIN, int RRN);
 
 int regData_deleteWithInputCriteria(FILE *BIN);
 
-char *func5_pointerToField(char *line, int field);
-
-void func5_readStringField(char outputVetor[], char *line, int fieldNumber);
-
-int func5_readIntField(char *line, int fieldNumber);
-
-regData func5_registerPerLine(char *line);
+regData func5_createRegister();
 
 int func5_insert(FILE* BIN);
 

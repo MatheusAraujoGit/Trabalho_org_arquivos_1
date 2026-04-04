@@ -67,8 +67,8 @@ int main()
 
             break;
 
-            case 3: //Teste da funcionalidade 3
-                    //Pelo visto esta funcionando
+            case 3: //funcionalidade 3: pesquisar e imprimir registros
+
                 scanf("%s", bin_name);
                 outputBIN = fopen(bin_name, "rb+");
 
@@ -106,7 +106,7 @@ int main()
             break;
 
             case 5: // funcionalidade 5: inserir n registros
-                scanf("%s", bin_name);
+                scanf("%s ", bin_name);
                 outputBIN = fopen(bin_name, "rb+");
 
                 if(outputBIN == NULL){
