@@ -27,3 +27,8 @@ clean:
 
 run:
 	./programTrab
+
+runTest:
+	make all
+	./programTrab < buildin
+	./programTrab < in

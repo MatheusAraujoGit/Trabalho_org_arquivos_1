@@ -106,7 +106,18 @@ int main()
             break;
 
             case 5:
-            printf("funcão ainda não implementada! \n");
+                scanf("%s", bin_name);
+                outputBIN = fopen(bin_name, "rb+");
+
+                if(outputBIN == NULL){
+                    error_flag = true;
+                    break;
+                }
+
+                
+
+                fclose(outputBIN);
+                BinarioNaTela(bin_name);
             break;
 
             case 6:

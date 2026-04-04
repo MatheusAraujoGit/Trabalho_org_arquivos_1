@@ -228,8 +228,11 @@ char regData_testCriteria(regData registro, criteria teste){
 // retorna -1 se nao achou nada(fim de arquivo)
 int regData_searchReg(FILE *BIN, regData *outputReg, int m, criteria tests[]){
     int foundOne = 0;
+    int RRN = 0;
+
     while (foundOne == 0){
         int flag = regData_read(BIN, outputReg);
+        RRN++;
         switch (flag){
         case -1: // fim de arquivo
             return -1;
@@ -250,7 +253,7 @@ int regData_searchReg(FILE *BIN, regData *outputReg, int m, criteria tests[]){
             break;
         }
     }
-    return ftell(BIN) - 80; // Eu passei pelo registro que eu queria por causa dos freads, entao tenho que compensar voltando 80 bytes
+    return (RRN)*80 - 17; // Eu passei pelo registro que eu queria por causa dos freads, entao tenho que compensar voltando 1 RRN
 }
 
 // Essa funcao eu fiz direto com o input do terminal pq eu nao sei como separar a parte do print e da busca sem enlouquecer com alocacao dinamica
@@ -363,7 +366,7 @@ int regData_DeleteRegistry(FILE* BIN, int RRN){
     tempHead.topo = RRN;
     long currentPos = ftell(BIN);
     regHeader_write(BIN, &tempHead);    //Essa funcao move o ponteiro entao preciso salvar a posicao atual
-    fseek(BIN, currentPos, SEEK_SET);
+    fseek(BIN, currentPos, SEEK_SET);   //nao deveriamos precisar salvar a posição atual pq já temos o seu RRN?
 
     if (tempData.nomeEstacao != NULL) free(tempData.nomeEstacao);
     if (tempData.nomeLinha != NULL) free(tempData.nomeLinha);
@@ -374,8 +377,10 @@ int regData_DeleteRegistry(FILE* BIN, int RRN){
 //funçao copypastada e editada do searchReg que deleta ao encontrar
 int regData_searchAndDeleteReg(FILE *BIN, regData *outputReg, int m, criteria tests[]){
     int foundOne = 0;
+    int RRN = -1;
     while (foundOne == 0){
         int flag = regData_read(BIN, outputReg);
+        RRN++;
         switch (flag){
         case -1: // fim de arquivo
             return -1;
@@ -393,7 +398,7 @@ int regData_searchAndDeleteReg(FILE *BIN, regData *outputReg, int m, criteria te
 
             if (failed == 0){
                 foundOne = 1;
-                int RRN = ((ftell(BIN) - 17) / 80) - 1;
+                //int RRN = ((ftell(BIN) - 17) / 80) - 1;
                 regData_DeleteRegistry(BIN, RRN);
             }
 
@@ -523,8 +528,10 @@ int regData_deleteWithInputCriteria(FILE *BIN){
 
         int foundOne = 0;
         int flag;
+        int RRN = -1;
 
         while ((flag = regData_read(BIN, &tempReg)) != -1){
+            RRN++;
             if (flag == 1){ // achou um registro valido
                 int passedAllTests = 1;
                 for (int k = 0; k < m; k++){
@@ -536,7 +543,7 @@ int regData_deleteWithInputCriteria(FILE *BIN){
 
                 if (passedAllTests){
                     // como executou o regData_read, o ponteiro de arquivo esta no proximo registro, entao compenso subtraindo 1
-                    int RRN = ((ftell(BIN)-17)/80 ) - 1;
+                    //int RRN = ((ftell(BIN)-17)/80 ) - 1;
                     regData_DeleteRegistry(BIN, RRN);
                     foundOne = 1;
                     removedAtLeastOne = 1;
@@ -562,4 +569,8 @@ int regData_deleteWithInputCriteria(FILE *BIN){
         regHeader_recalculateNEstacoes(BIN);
 
     return 0;
+}
+
+int regData_insertReg(FILE *Bin, regData *pRegData){
+        int a;
 }

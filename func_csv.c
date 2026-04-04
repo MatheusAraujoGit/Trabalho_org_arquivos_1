@@ -129,7 +129,7 @@ void CSV_createHeader(FILE *inputCSV, regHeader *inputHeader){
             }
         }
 
-        // Se nao existe, aloco mais memoria pro array e conto uma estação a mais
+        // Se nao existe, aloco mais memoria pro array (se necessário) e conto uma estação a mais
         if (jaExiste == 0){
             if (inputHeader->nEstacoes >= capacity) {
             capacity *= 2;

@@ -65,4 +65,6 @@ int regData_DeleteRegistry(FILE* BIN, int RRN);
 
 int regData_deleteWithInputCriteria(FILE *BIN);
 
+int regData_insertReg(FILE *Bin, regData *pRegData);
+
 #endif
