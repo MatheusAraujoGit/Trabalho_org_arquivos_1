@@ -571,6 +571,119 @@ int regData_deleteWithInputCriteria(FILE *BIN){
     return 0;
 }
 
-int regData_insertReg(FILE *Bin, regData *pRegData){
-        int a;
+// Funcao auxiliar para selecionar qual campo eu quero de uma line
+// retorna ponteiro para primeira posicao do campo que eu quero depois da virgula
+// Campo vai de 1 a 8
+char *func5_pointerToField(char *line, int field){
+    if (field == 1)
+        return line;
+
+    int foundCommas = 0;
+    char *pChar = line;
+
+    // Vai varrendo e contando as virgulas para achar qual campo eu quero
+    while (*pChar != '\0'){
+        if (*pChar == ' '){
+            foundCommas++;
+            if (foundCommas == field - 1)
+                return pChar + 1; // Retorna o ponteiro para o caractere após a vírgula
+        }
+        pChar++;
+    }
+
+    return NULL; // Campo vazio
+}
+
+void func5_readStringField(char outputVetor[], char *line, int fieldNumber){
+
+    if (func5_pointerToField(line, fieldNumber) == NULL){ // vazio -> ""
+        strcpy(outputVetor, "");
+        return;
+    }
+
+    strcpy(outputVetor, func5_pointerToField(line, fieldNumber)); // supondo que eu quero o campo 2, "16,Ana Rosa,300,..." vira "Ana Rosa,300..." com o CSV_pointerToField
+    char *pChar = outputVetor;
+    while (*pChar != '\0')
+    {
+        if (*pChar == ' ' || *pChar == '\n' || *pChar == '\r')
+            *pChar = '\0'; // Com essa parte aqui "Ana Rosa,300..." vira "Ana Rosa\0300..."
+        
+        pChar++;
+    }
+    return;
+}
+
+// Retorna o valor int de um campo em uma string
+int func5_readIntField(char *line, int fieldNumber){
+    char buffer[256];
+    func5_readStringField(buffer, line, fieldNumber);
+    if (strcmp(buffer, "NULO") == 0)
+        return -1; // significa campo nulo
+    else
+        return atoi(buffer); // faz a string descerevendo um numero virar int
+}
+
+// Funçao auxiliar que retorna um registro que vem de uma line da funçao 5
+regData func5_registerPerLine(char *line){
+    regData regOutput;
+
+    // Dados faceis
+    regOutput.removido = '0';
+    regOutput.proxRemovido = -1;
+    regOutput.codEstacao = func5_readIntField(line, 1);
+    regOutput.codLinha = func5_readIntField(line, 3);
+    regOutput.codProxEstacao = func5_readIntField(line, 5);
+    regOutput.distProxEstacao = func5_readIntField(line, 6);
+    regOutput.codLinhaIntegra = func5_readIntField(line, 7);
+    regOutput.codEstIntegra = func5_readIntField(line, 8);
+
+    // Agora conseguir as strings
+    // NA MEMORIA vou deixar as strings com final \0, para ter acesso as funcoes da string.h, só vou tirar o \0 na hora de escrever no disco
+    char stringBuffer[256];
+
+    func5_readStringField(stringBuffer, line, 2);
+    regOutput.nomeEstacao = strdup(stringBuffer); // strdup me faz o trabalho de alocar dinamicamente isso aqui
+
+    func5_readStringField(stringBuffer, line, 4);
+    regOutput.nomeLinha = strdup(stringBuffer);
+
+    // Tamanho das strings sem o \0
+    regOutput.tamNomeEstacao = strlen(regOutput.nomeEstacao);
+    regOutput.tamNomeLinha = strlen(regOutput.nomeLinha);
+
+    return regOutput;
+}
+
+int func5_insert(FILE* BIN){
+    regData tempData;
+    regHeader tempHead;
+
+    regHeader_read(BIN, &tempHead);
+    if (tempHead.status == '0') return -1;
+
+    char lineBuffer[512];
+
+    fgets(lineBuffer, sizeof(lineBuffer), stdin);
+    
+    tempData = func5_registerPerLine(lineBuffer);
+
+    if(tempHead.topo != -1){
+        fseek(BIN,17 + tempHead.topo*80,SEEK_SET);
+        printf("using deleted registries\n");
+        regData curr_top;
+        regData_read(BIN, &curr_top);
+        fseek(BIN, -80, SEEK_CUR);
+        regData_write(BIN, &tempData);
+        tempHead.topo = curr_top.proxRemovido;
+        regHeader_write(BIN, &tempHead);
+    }
+    else{
+        fseek(BIN,17 + (tempHead.proxRRN)*80,SEEK_SET);
+        printf("adding to end\n");
+        regData_write(BIN, &tempData);
+        tempHead.proxRRN = tempHead.proxRRN+1;
+        regHeader_write(BIN, &tempHead);
+    }
+
+    regHeader_recalculateNEstacoes(BIN);
 }

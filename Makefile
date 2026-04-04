@@ -29,6 +29,7 @@ run:
 	./programTrab
 
 runTest:
+	rm estacoes.bin
 	make all
 	./programTrab < buildin
 	./programTrab < in

@@ -105,7 +105,7 @@ int main()
 
             break;
 
-            case 5:
+            case 5: // funcionalidade 5: inserir n registros
                 scanf("%s", bin_name);
                 outputBIN = fopen(bin_name, "rb+");
 
@@ -114,7 +114,12 @@ int main()
                     break;
                 }
 
-                
+                int n;
+                scanf("%d ", &n);
+
+                for(int i=0; i<n; i++){
+                func5_insert(outputBIN);
+                }
 
                 fclose(outputBIN);
                 BinarioNaTela(bin_name);
