@@ -29,7 +29,7 @@ run:
 	./programTrab
 
 runTest:
-	rm estacoes_removidos.bin
-	cp estacoes_removidos_original.bin estacoes_removidos.bin
+	rm estacoes.bin
 	make all
+	./programTrab < buildin
 	./programTrab < in
