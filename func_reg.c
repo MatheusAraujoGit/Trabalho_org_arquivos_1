@@ -177,8 +177,10 @@ int regData_printBIN(FILE *BIN){
 
     if (readOne == 0) printf("Registro inexistente.\n");
 
-    free(tempData.nomeEstacao);
-    free(tempData.nomeLinha);
+    if (tempData.nomeEstacao != NULL)
+        free(tempData.nomeEstacao);
+    if (tempData.nomeLinha != NULL)
+        free(tempData.nomeLinha);
 }
 
 int print_with_criteria(FILE* BIN){
@@ -204,6 +206,10 @@ int print_with_criteria(FILE* BIN){
     if(!found_one) printf("Registro inexistente.\n");
     printf("\n");
 
+    if (tempData.nomeEstacao != NULL)
+        free(tempData.nomeEstacao);
+    if (tempData.nomeLinha != NULL)
+        free(tempData.nomeLinha);
     return 0;
 }
 
@@ -260,7 +266,10 @@ int search_and_delete(FILE* BIN){
     }
 
     regHeader_recalculateNEstacoes(BIN);
-
+    if (tempData.nomeEstacao != NULL)
+        free(tempData.nomeEstacao);
+    if (tempData.nomeLinha != NULL)
+        free(tempData.nomeLinha);
     return 0;
 }
 
@@ -516,7 +525,8 @@ void regData_updateReg(FILE* BIN, regCriteria updates, regData old){
     regData_write(BIN, &new);
 }
 
-//cria um 
+//cria um registro de criterio e um de atualizaçao, e atualiza todos os
+//registros que satisfazerem o de criterio com o de atualizaçao
 int update(FILE* BIN){
     regData tempData;
     regHeader tempHead;
@@ -537,5 +547,10 @@ int update(FILE* BIN){
         if(do_they_match(criteria,tempData)) regData_updateReg(BIN, to_update, tempData);
     }
 
+    regHeader_recalculateNEstacoes(BIN);
+    if (tempData.nomeEstacao != NULL)
+        free(tempData.nomeEstacao);
+    if (tempData.nomeLinha != NULL)
+        free(tempData.nomeLinha);
     return 0;
 }

@@ -1,3 +1,6 @@
+// Miya Parus Rios 16910825
+// Matheus Araújo Alves 16910609
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <stdbool.h>
