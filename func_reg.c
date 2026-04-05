@@ -207,40 +207,38 @@ int print_with_criteria(FILE* BIN){
     return 0;
 }
 
-//seta o registro atual como deletado;
+//seta o registro em RRN como deletado;
 //seta seu proxRemovido para o topo do cabecalho;
 //seta o topo do cabecalho para ele
-void regData_DeleteRegistry(FILE* BIN, int curr_RRN, int head_topo){
+void regData_DeleteRegistry(FILE* BIN, int RRN){
     regHeader tempHead;
     regData tempData;
     tempData.nomeEstacao = NULL;
     tempData.nomeLinha = NULL;
 
-    fseek(BIN, 17+80*curr_RRN, SEEK_SET);
+    fseek(BIN, -80, SEEK_CUR);
     int status = regData_read(BIN, &tempData);
     if(status != 1) return;
 
-    tempData.removido = '1';
-    tempData.proxRemovido = head_topo;
-
-    fseek(BIN, -80, SEEK_CUR);
-    regData_write(BIN, &tempData);
-    
-    long pos = ftell(BIN);
-
     regHeader_read(BIN, &tempHead);
-    tempHead.topo = curr_RRN-1;
+
+    tempData.removido = '1';
+    tempData.proxRemovido = tempHead.topo;
     if(tempData.codProxEstacao != -1) tempHead.nParesEstacao--;
+
+    tempHead.topo = RRN;
     regHeader_write(BIN, &tempHead);
 
-    fseek(BIN, pos, SEEK_SET);
+    fseek(BIN, 17+80*RRN, SEEK_SET);
+    regData_write(BIN, &tempData);
 
     if (tempData.nomeEstacao != NULL) free(tempData.nomeEstacao);
     if (tempData.nomeLinha != NULL) free(tempData.nomeLinha);
 
+    return;
 }
 
-//TODO this is broken rn!! must fix
+//cria um registro de criterios, e deleta todos os registros no bin que satisfazem o criterio
 int search_and_delete(FILE* BIN){
     regData tempData;
     regHeader tempHead;
@@ -257,11 +255,11 @@ int search_and_delete(FILE* BIN){
     int RRN = -1;
     while(regData_read(BIN, &tempData) != -1){
         RRN++;
-        if(do_they_match(criteria,tempData)){
-            //fseek(BIN, -80, SEEK_CUR);
-            regData_DeleteRegistry(BIN, RRN, tempHead.topo);
-        }
+        if(tempData.removido == '1') continue;
+        if(do_they_match(criteria,tempData)) regData_DeleteRegistry(BIN, RRN);
     }
+
+    regHeader_recalculateNEstacoes(BIN);
 
     return 0;
 }
@@ -336,7 +334,7 @@ void regHeader_recalculateNEstacoes(FILE* BIN){
         free(tempData.nomeLinha);
 }
 
-// Funçao auxiliar que retorna um registro que vem de uma linha da funçao 5
+//cria um registro a partir da entrada do usuario
 regData createRegister(){
     regData regOutput;
 
@@ -381,6 +379,8 @@ regData createRegister(){
     return regOutput;
 }
 
+//insere um registro de dados, reutilzando espaço de dados removidos se possivel
+//se não, o coloca no fim do arquivo
 int insert(FILE* BIN){
     regData tempData;
     regHeader tempHead;
@@ -411,7 +411,7 @@ int insert(FILE* BIN){
     regHeader_recalculateNEstacoes(BIN);
 }
 
-//tells if a data register matches a criteria register
+//diz se um registro de dados satisfaz os critérios de um registro de critério
 bool do_they_match(regCriteria criteria, regData data){
 
     bool all_matched = true;
@@ -429,6 +429,7 @@ bool do_they_match(regCriteria criteria, regData data){
     return all_matched;
 }
 
+//cria um registro de critério a partir de entradas do usuário
 regCriteria createCriteriaRegister(){
     regCriteria regOutput;
 
@@ -495,18 +496,46 @@ regCriteria createCriteriaRegister(){
     return regOutput;
 }
 
+//a partir de um criterio de updates e um registro de dados, vê tudo o que precisa ser atualizado
+//e sobreescreve o registro de dados com a versão atualizada
+void regData_updateReg(FILE* BIN, regCriteria updates, regData old){
+    regData new = old;
+
+    if(updates.codEstacao != -2 && old.codEstacao != updates.codEstacao) new.codEstacao = updates.codEstacao;
+    if(updates.codEstIntegra != -2 && old.codEstIntegra != updates.codEstIntegra) new.codEstIntegra = updates.codEstIntegra;
+    if(updates.codLinha != -2 && old.codLinha != updates.codLinha) new.codLinha = updates.codLinha;
+    if(updates.codLinhaIntegra != -2 && old.codLinhaIntegra != updates.codLinhaIntegra) new.codLinhaIntegra = updates.codLinhaIntegra;
+    if(updates.codProxEstacao != -2 && old.codProxEstacao != updates.codProxEstacao) new.codProxEstacao = updates.codProxEstacao;
+    if(updates.distProxEstacao != -2 && old.distProxEstacao != updates.distProxEstacao) new.distProxEstacao = updates.distProxEstacao;
+    if(updates.tamNomeEstacao != -2 && old.tamNomeEstacao != updates.tamNomeEstacao) new.tamNomeEstacao = updates.distProxEstacao;
+    if(updates.tamNomeLinha != -2 && old.tamNomeLinha != updates.tamNomeLinha) new.tamNomeLinha = updates.tamNomeLinha;
+    if(updates.nomeEstacao != NULL && strcmp(updates.nomeEstacao,old.nomeEstacao) != 0) new.nomeEstacao = strdup(updates.nomeEstacao);
+    if(updates.nomeLinha != NULL && strcmp(updates.nomeLinha,old.nomeLinha) != 0) new.nomeLinha = strdup(updates.nomeLinha);
+
+    fseek(BIN, -80, SEEK_CUR);
+    regData_write(BIN, &new);
+}
+
+//cria um 
 int update(FILE* BIN){
     regData tempData;
     regHeader tempHead;
     regCriteria criteria;
+    regCriteria to_update;
+
+    tempData.nomeEstacao = NULL;
+    tempData.nomeLinha = NULL;
 
     regHeader_read(BIN, &tempHead);
     if (tempHead.status == '0') return -1;
 
     criteria = createCriteriaRegister();
-    printf("%d and %d\n", criteria.codEstIntegra, criteria.codLinhaIntegra);
+    to_update = createCriteriaRegister();
 
     while(regData_read(BIN, &tempData) != -1){
-        if(do_they_match(criteria,tempData)) printf("in construction!\n");
+        if(tempData.removido == '1') continue;
+        if(do_they_match(criteria,tempData)) regData_updateReg(BIN, to_update, tempData);
     }
+
+    return 0;
 }
