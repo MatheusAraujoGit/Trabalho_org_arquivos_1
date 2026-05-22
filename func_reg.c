@@ -155,6 +155,7 @@ void regData_printData(regData inputReg){
 }
 
 //printa todos os dados de um binario
+//-1 é erro, 0 é êxito
 int regData_printBIN(FILE *BIN){
     regHeader tempHead;
     regData tempData;
@@ -181,6 +182,8 @@ int regData_printBIN(FILE *BIN){
         free(tempData.nomeEstacao);
     if (tempData.nomeLinha != NULL)
         free(tempData.nomeLinha);
+
+    return 0;
 }
 
 int print_with_criteria(FILE* BIN){

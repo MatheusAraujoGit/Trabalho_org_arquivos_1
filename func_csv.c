@@ -96,6 +96,77 @@ int CSV_fnv1a_hash(const char* str) {
     return hash;
 }
 
+
+//Vai de linha a linha lendo no csv escrevendo os registros no BIN
+//Corrigi para que o header fosse escrito no final e integrei o csv_createHeader para nao precisar fazer malabarismo com o csv
+void CSV_createBIN(FILE* inputCSV, FILE* outputBIN){
+    regData tempReg;
+    
+    //Inicializa o cabecalho zerado
+    regHeader tempHeader;
+    tempHeader.status = '0';
+    tempHeader.topo = -1;
+    tempHeader.proxRRN = 0;
+    tempHeader.nEstacoes = 0;
+    tempHeader.nParesEstacao = 0;
+    
+    char lineBuffer[512];
+    
+    //variaveis para a parte do cabecalho
+    char nomeEstacao[128];
+    int capacity = 10;
+    int* nomesUnicos = malloc(capacity*sizeof(int));
+    
+    fseek(inputCSV, 0, SEEK_SET);
+    fseek(outputBIN, 17, SEEK_SET); // 17 para escrever depois do cabecalho
+    
+    fgets(lineBuffer, sizeof(lineBuffer), inputCSV);
+    while(fgets(lineBuffer, sizeof(lineBuffer), inputCSV) != NULL){
+        //Parte de dados
+        tempReg = CSV_registerPerLine(lineBuffer);
+        regData_write(outputBIN, &tempReg);
+        
+        //Parte do cabeçalho
+        tempHeader.proxRRN++;
+        
+        //Pares
+        if(tempReg.codProxEstacao != -1) tempHeader.nParesEstacao++;
+        
+        //Calcular numero de estacoes por nomes unicos
+        CSV_readStringField(nomeEstacao, lineBuffer, 2);
+        
+        // Verificar se ja existe
+        int hash = CSV_fnv1a_hash(nomeEstacao);
+        char jaExiste = 0;
+        
+        for(int i = 0; i< tempHeader.nEstacoes; i++){
+            if (nomesUnicos[i] == hash){
+                jaExiste = 1;
+                break;
+            }
+        }
+        
+        // Se nao existe, aloco mais memoria pro array (se necessário) e conto uma estação a mais
+        if (jaExiste == 0){
+            if (tempHeader.nEstacoes >= capacity) {
+                capacity *= 2;
+                nomesUnicos = realloc(nomesUnicos, capacity * sizeof(int));
+            }
+            
+            nomesUnicos[tempHeader.nEstacoes] = hash;
+            tempHeader.nEstacoes += 1;
+        }
+    }
+    
+    free(nomesUnicos);
+    
+    //CSV_createHeader(inputCSV, &tempHeader); //RIP createHeader
+    regHeader_write(outputBIN, &tempHeader);
+    regHeader_setFileConsistent(outputBIN);
+}
+
+//Essa parte do código virou saudade
+/*
 void CSV_createHeader(FILE *inputCSV, regHeader *inputHeader){
     //inicializando como inconsistente
     fseek(inputCSV, 0, SEEK_SET);
@@ -147,24 +218,4 @@ void CSV_createHeader(FILE *inputCSV, regHeader *inputHeader){
     }
     free(nomesUnicos);
 }
-
-//Vai de linha a linha lendo no csv escrevendo os registros no BIN
-void CSV_createBIN(FILE* inputCSV, FILE* outputBIN){
-    regData tempReg;
-    regHeader tempHeader;
-
-    char lineBuffer[512];
-
-    //header já é inicializado como inconsistente
-    CSV_createHeader(inputCSV, &tempHeader);
-    fseek(inputCSV, 0, SEEK_SET);
-    fseek(outputBIN, 0, SEEK_SET);
-    regHeader_write(outputBIN, &tempHeader);
-
-    fgets(lineBuffer, sizeof(lineBuffer), inputCSV);
-    while(fgets(lineBuffer, sizeof(lineBuffer), inputCSV) != NULL){
-        tempReg = CSV_registerPerLine(lineBuffer);
-        regData_write(outputBIN, &tempReg);
-    }
-    regHeader_setFileConsistent(outputBIN);
-}
+*/
