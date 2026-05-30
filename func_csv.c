@@ -156,6 +156,11 @@ void CSV_createBIN(FILE* inputCSV, FILE* outputBIN){
             nomesUnicos[tempHeader.nEstacoes] = hash;
             tempHeader.nEstacoes += 1;
         }
+
+    if (tempReg.nomeEstacao != NULL)
+        free(tempReg.nomeEstacao);
+    if (tempReg.nomeLinha != NULL)
+        free(tempReg.nomeLinha);
     }
     
     free(nomesUnicos);

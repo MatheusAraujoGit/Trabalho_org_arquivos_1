@@ -67,6 +67,9 @@ void regHeader_setFileInconsistent(FILE *file);
 //escreve um novo header
 void regHeader_write(FILE *outputBIN, regHeader *pRegCab);
 
+//Lê um header
+void regHeader_read(FILE *outputBIN, regHeader *pRegCab);
+
 //escreve um novo registro de dado
 void regData_write(FILE *outputBIN, regData *pregData);
 
@@ -86,14 +89,14 @@ void regData_updateReg(FILE* BIN, regCriteria updates, regData old);
 int regData_printBIN(FILE *BIN);
 
 //cria um registro de criterio, e deleta todos os registros de dados que o satisfazer
-int search_and_delete(FILE* BIN);
+void search_and_delete(FILE* BIN);
 
 //insere um registro de dados, aproveitando memoria se possivel
-int insert(FILE* BIN);
+void insert(FILE* BIN);
 
 //cria um registro de criterio e um de atualizaçao, e atualiza todos os
 //registros que satisfazerem o de criterio com o de atualizaçao
-int update(FILE* BIN);
+void update(FILE* BIN);
 
 //cria um registro de criteiro, e imprime todos os registros que o satisfazerem
 int print_with_criteria(FILE* BIN);

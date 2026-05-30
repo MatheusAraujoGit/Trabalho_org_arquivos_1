@@ -15,6 +15,7 @@ int main()
     char bin_name[100];
     FILE* inputCSV;
     FILE* outputBIN;
+    regHeader header;
     int option = -1;
     int n = 0;
     int status = 0;
@@ -67,6 +68,7 @@ int main()
                 break;
             }
 
+
             scanf("%d ", &n);
 
             for (int i = 0; i < n; i++){
@@ -85,20 +87,27 @@ int main()
             scanf("%s ", bin_name);
             outputBIN = fopen(bin_name, "rb+");
 
+            //Status e erros
             if (outputBIN == NULL){
                 error_flag = true;
                 break;
             }
-
-            scanf("%d ", &n);
-            for (int i = 0; i < n; i++){
-                status = search_and_delete(outputBIN);
-                if (status == -1) break;
-            }
-            if (status == -1){
+            regHeader_read(outputBIN, &header);
+            if(header.status == '0'){
                 error_flag = true;
                 break;
             }
+            else{
+                regHeader_setFileInconsistent(outputBIN);
+            }
+
+            scanf("%d ", &n);
+            for (int i = 0; i < n; i++){
+                search_and_delete(outputBIN);
+            }
+
+            regHeader_recalculateNEstacoes(outputBIN);
+            regHeader_setFileConsistent(outputBIN);
 
             fclose(outputBIN);
             BinarioNaTela(bin_name);
@@ -108,20 +117,27 @@ int main()
             scanf("%s ", bin_name);
             outputBIN = fopen(bin_name, "rb+");
 
+            //Status erros
             if (outputBIN == NULL){
                 error_flag = true;
                 break;
             }
-
-            scanf("%d ", &n);
-            for (int i = 0; i < n; i++){
-                status = insert(outputBIN);
-                if (status == -1) break;
-            }
-            if (status == -1){
+            regHeader_read(outputBIN, &header);
+            if(header.status == '0'){
                 error_flag = true;
                 break;
             }
+            else{
+                regHeader_setFileInconsistent(outputBIN);
+            }
+
+            scanf("%d ", &n);
+            for (int i = 0; i < n; i++){
+                insert(outputBIN);
+            }
+
+            regHeader_recalculateNEstacoes(outputBIN);
+            regHeader_setFileConsistent(outputBIN);
 
             fclose(outputBIN);
             BinarioNaTela(bin_name);
@@ -131,20 +147,28 @@ int main()
             scanf("%s ", bin_name);
             outputBIN = fopen(bin_name, "rb+");
 
+            
+            //Status e erros
             if (outputBIN == NULL){
                 error_flag = true;
                 break;
             }
-
-            scanf("%d ", &n);
-            for (int i = 0; i < n; i++){
-                status = update(outputBIN);
-                if (status == -1) break;
-            }
-            if (status == -1){
+            regHeader_read(outputBIN, &header);
+            if(header.status == '0'){
                 error_flag = true;
                 break;
             }
+            else{
+                regHeader_setFileInconsistent(outputBIN);
+            }
+            
+            scanf("%d ", &n);
+            for (int i = 0; i < n; i++){
+                update(outputBIN);
+            }
+
+            regHeader_recalculateNEstacoes(outputBIN);
+            regHeader_setFileConsistent(outputBIN);
 
             fclose(outputBIN);
             BinarioNaTela(bin_name);
