@@ -225,8 +225,7 @@ int print_with_criteria(FILE* BIN){
 //seta o registro em RRN como deletado;
 //seta seu proxRemovido para o topo do cabecalho;
 //seta o topo do cabecalho para ele
-void regData_DeleteRegistry(FILE* BIN, int RRN){
-    regHeader tempHead;
+void regData_DeleteRegistry(FILE* BIN, regHeader* header, int RRN){
     regData tempData;
     tempData.nomeEstacao = NULL;
     tempData.nomeLinha = NULL;
@@ -235,15 +234,11 @@ void regData_DeleteRegistry(FILE* BIN, int RRN){
     int status = regData_read(BIN, &tempData);
     if (status != 1) return;
 
-    regHeader_read(BIN, &tempHead);
-
     tempData.removido = '1';
-    tempData.proxRemovido = tempHead.topo;
-    if (tempData.codProxEstacao != -1) tempHead.nParesEstacao--;
+    tempData.proxRemovido = header->topo;
+    if (tempData.codProxEstacao != -1) header->nParesEstacao--;
 
-    tempHead.topo = RRN;
-
-    regHeader_write(BIN, &tempHead);
+    header->topo = RRN;
 
     fseek(BIN, 17 + 80 * RRN, SEEK_SET);
     regData_write(BIN, &tempData);
@@ -256,7 +251,7 @@ void regData_DeleteRegistry(FILE* BIN, int RRN){
 }
 
 //cria um registro de criterios, e deleta todos os registros no bin que satisfazem o criterio
-void search_and_delete(FILE* BIN){
+void search_and_delete(FILE* BIN, regHeader* header){
     regData tempData;
     regCriteria criteria;
 
@@ -271,7 +266,7 @@ void search_and_delete(FILE* BIN){
         RRN++;
         if(tempData.removido == '1') continue;
         if(do_they_match(criteria,tempData)){
-            regData_DeleteRegistry(BIN, RRN);
+            regData_DeleteRegistry(BIN, header, RRN);
 
             //codEstacao só existe um, então ja posso parar
             if(criteria.codEstacao != -2){

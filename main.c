@@ -103,9 +103,10 @@ int main()
 
             scanf("%d ", &n);
             for (int i = 0; i < n; i++){
-                search_and_delete(outputBIN);
+                search_and_delete(outputBIN, &header);
             }
 
+            regHeader_write(outputBIN, &header);
             regHeader_recalculateNEstacoes(outputBIN);
             regHeader_setFileConsistent(outputBIN);
 

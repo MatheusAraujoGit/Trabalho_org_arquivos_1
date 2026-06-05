@@ -80,7 +80,7 @@ void regData_printData(regData registro);
 void regHeader_recalculateNEstacoes(FILE* BIN);
 
 //deleta um registro de dado em RRN (passar o RRN economiza fseeks)
-void regData_DeleteRegistry(FILE* BIN, int RRN);
+void regData_DeleteRegistry(FILE* BIN, regHeader* header, int RRN);
 
 //atualiza um registro de dado com base num registro de criterio
 void regData_updateReg(FILE* BIN, regCriteria updates, regData old);
@@ -89,7 +89,7 @@ void regData_updateReg(FILE* BIN, regCriteria updates, regData old);
 int regData_printBIN(FILE *BIN);
 
 //cria um registro de criterio, e deleta todos os registros de dados que o satisfazer
-void search_and_delete(FILE* BIN);
+void search_and_delete(FILE* BIN, regHeader* header);
 
 //insere um registro de dados, aproveitando memoria se possivel
 void insert(FILE* BIN);
