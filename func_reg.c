@@ -132,6 +132,8 @@ void search(FILE* BIN){
     
     criteria = createCriteriaRegister();
 
+    fseek(BIN, 17, SEEK_SET);
+
     bool found_one = false;
     while(regData_read(BIN, &tempData) != -1){
         if(do_they_match(criteria,tempData)){
