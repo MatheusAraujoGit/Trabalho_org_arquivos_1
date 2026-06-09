@@ -1,9 +1,20 @@
+#include "auxiliares.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <ctype.h>
-#include "fornecidas.h"
 
+//converter uma string pra um int usando o hash FNV-1a
+int fnv1a_hash(const char* str) {
+    int hash = 2166136261; // FNV offset basis
+    while (*str) {
+        hash ^= *str++;
+        hash *= 16777619; // FNV prime
+    }
+    return hash;
+}
+
+//fornecida
 void BinarioNaTela(char *arquivo) {
     FILE *fs;
     if (arquivo == NULL || !(fs = fopen(arquivo, "rb"))) {
@@ -33,6 +44,7 @@ void BinarioNaTela(char *arquivo) {
     fclose(fs);
 }
 
+//fornecida
 void ScanQuoteString(char *str) {
     char R;
 

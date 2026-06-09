@@ -7,176 +7,237 @@
 #include <string.h>
 #include "func_reg.h"
 #include "func_csv.h"
-#include "fornecidas.h"
+#include "func_Btree.h"
 
 int main()
 {
     char csv_name[100];
     char bin_name[100];
-    FILE* inputCSV;
-    FILE* outputBIN;
+    FILE* CSV;
+    FILE* BIN;
     regHeader header;
     int option = -1;
     int n = 0;
-    int status = 0;
     bool error_flag = false;
 
     scanf("%d", &option);
     switch(option){
+        //--------
         case 1: // funcionalidade 1: ler um csv e converter para binário
+
+            //ler nomes de arquivos
             scanf("%s", csv_name);
             scanf("%s", bin_name);
-            inputCSV = fopen(csv_name, "r");
-            outputBIN = fopen(bin_name, "wb");
 
-            if (inputCSV == NULL || outputBIN == NULL){
+            //tentar abrir arquivos + errorcheck
+            CSV = fopen(csv_name, "r");
+            BIN = fopen(bin_name, "wb");
+            if (CSV == NULL || BIN == NULL){
                 error_flag = true;
                 break;
             }
             
-            CSV_createBIN(inputCSV, outputBIN);
+            //executar a funcionalidade
+            createBIN(CSV, BIN);
 
-            fclose(inputCSV);
-            fclose(outputBIN);
+            //fechar arquivos e imprimir
+            fclose(CSV);
+            fclose(BIN);
             BinarioNaTela(bin_name);
+
         break;
 
+        //--------
         case 2: // funcionalidade 2: ler um binario e o printar na tela
+            
+            //ler nome do arquivo
             scanf("%s", bin_name);
-            outputBIN = fopen(bin_name, "rb");
 
-            if (outputBIN == NULL){
+            //tentar abrir arquivos + errorcheck
+            BIN = fopen(bin_name, "rb");
+            if (BIN == NULL){
+                error_flag = true;
+                break;
+            }
+            regHeader_read(BIN, &header);
+            if(header.status == '0'){
                 error_flag = true;
                 break;
             }
 
-            status = regData_printBIN(outputBIN);
-            if (status == -1){
-                error_flag = true;
-                break;
-            }
+            //executar a funcionalidade
+            printBIN(BIN);
+            
+            //fechar arquivo
+            fclose(BIN);
 
-            fclose(outputBIN);
         break;
 
-        case 3: // funcionalidade 3: pesquisar e imprimir registros
-            scanf("%s", bin_name);
-            outputBIN = fopen(bin_name, "rb");
+        //-------- checar essa funcionalidade: não passa um caso do runcodes. talvez algo a ver com o bgl de parar quando a pesquisa for por nroestação?
+        case 3: // funcionalidade 3: pesquisar e imprimir n registros
 
-            if (outputBIN == NULL){
+            //ler nome do arquivo
+            scanf("%s", bin_name);
+
+            //tentar abrir arquivo + errorcheck
+            BIN = fopen(bin_name, "rb");
+            if (BIN == NULL){
+                error_flag = true;
+                break;
+            }
+            regHeader_read(BIN, &header);
+            if(header.status == '0'){
                 error_flag = true;
                 break;
             }
 
-
+            //ler n
             scanf("%d ", &n);
 
+            //executar a funcionalidade n vezes
             for (int i = 0; i < n; i++){
-                status = print_with_criteria(outputBIN);
-                if (status == -1) break;
+                search(BIN);
             }
-            if (status == -1){
-                error_flag = true;
-                break;
-            }
+            
+            //fechar arquivo
+            fclose(BIN);
 
-            fclose(outputBIN);
         break;
 
+        //-------- checar essa funcionalidade: pq o search and delete passa um endereço de header como parametro?
         case 4: // funcionalidade 4: apagar n registros
-            scanf("%s ", bin_name);
-            outputBIN = fopen(bin_name, "rb+");
 
-            //Status e erros
-            if (outputBIN == NULL){
+            //ler nome do arquivo
+            scanf("%s ", bin_name);
+
+            //tentar abrir arquivos + errorcheck
+            BIN = fopen(bin_name, "rb+");
+            if (BIN == NULL){
                 error_flag = true;
                 break;
             }
-            regHeader_read(outputBIN, &header);
+            regHeader_read(BIN, &header);
             if(header.status == '0'){
                 error_flag = true;
                 break;
             }
-            else{
-                regHeader_setFileInconsistent(outputBIN);
-            }
-
+            
+            //setar arquivo como inconsistente
+            regHeader_setFileInconsistent(BIN);
+            
+            //ler n
             scanf("%d ", &n);
+
+            //executar funcionalidade n vezes
             for (int i = 0; i < n; i++){
-                search_and_delete(outputBIN, &header);
+                delete(BIN, &header);
             }
 
-            regHeader_write(outputBIN, &header);
-            regHeader_recalculateNEstacoes(outputBIN);
-            regHeader_setFileConsistent(outputBIN);
-
-            fclose(outputBIN);
+            //atualizar header, setar arquivo como consistente, fechar e imprimir
+            regHeader_write(BIN, &header);
+            regHeader_updateNEstacoes(BIN);
+            regHeader_setFileConsistent(BIN);
+            fclose(BIN);
             BinarioNaTela(bin_name);
+
         break;
 
+        //--------
         case 5: // funcionalidade 5: inserir n registros
-            scanf("%s ", bin_name);
-            outputBIN = fopen(bin_name, "rb+");
 
-            //Status erros
-            if (outputBIN == NULL){
+            //ler nome do arquivo
+            scanf("%s ", bin_name);
+
+            //tentar abrir arquivos + errorcheck
+            BIN = fopen(bin_name, "rb+");
+            if (BIN == NULL){
                 error_flag = true;
                 break;
             }
-            regHeader_read(outputBIN, &header);
+            regHeader_read(BIN, &header);
             if(header.status == '0'){
                 error_flag = true;
                 break;
             }
-            else{
-                regHeader_setFileInconsistent(outputBIN);
-            }
 
+            //setar arquivo como inconsistente
+            regHeader_setFileInconsistent(BIN);
+    
+            //ler n
             scanf("%d ", &n);
+
+            //executar funcionalidade n vezes
             for (int i = 0; i < n; i++){
-                insert(outputBIN);
+                insert(BIN);
             }
 
-            regHeader_recalculateNEstacoes(outputBIN);
-            regHeader_setFileConsistent(outputBIN);
-
-            fclose(outputBIN);
+            //atualizar header, setar arquivo como consistente, fechar e imprimir
+            regHeader_updateNEstacoes(BIN);
+            regHeader_setFileConsistent(BIN);
+            fclose(BIN);
             BinarioNaTela(bin_name);
+
         break;
 
+        //--------
         case 6: //funcionalidade 6: atualizar n registros 
-            scanf("%s ", bin_name);
-            outputBIN = fopen(bin_name, "rb+");
 
-            
-            //Status e erros
-            if (outputBIN == NULL){
+            //ler nome do arquivo
+            scanf("%s ", bin_name);
+
+            //tentar abrir arquivos + errorcheck
+            BIN = fopen(bin_name, "rb+");
+            if (BIN == NULL){
                 error_flag = true;
                 break;
             }
-            regHeader_read(outputBIN, &header);
+            regHeader_read(BIN, &header);
             if(header.status == '0'){
                 error_flag = true;
                 break;
             }
-            else{
-                regHeader_setFileInconsistent(outputBIN);
-            }
-            
+
+            //setar arquivo como inconsistente
+            regHeader_setFileInconsistent(BIN);
+
+            //ler n
             scanf("%d ", &n);
+
+            //executar funcionalidade n vezes
             for (int i = 0; i < n; i++){
-                update(outputBIN);
+                update(BIN);
             }
 
-            regHeader_recalculateNEstacoes(outputBIN);
-            regHeader_setFileConsistent(outputBIN);
-
-            fclose(outputBIN);
+            //atualizar header, setar arquivo como consistente, fechar e imprimir
+            regHeader_updateNEstacoes(BIN);
+            regHeader_setFileConsistent(BIN);
+            fclose(BIN);
             BinarioNaTela(bin_name);
+
         break;
 
-        default:
-            printf("funcionalidade %d não definida!", option);
+        //--------
+        case 7:
+            printf("funcionalidade %d ainda nao implementada!", option);
+        break;
+
+        //--------
+        case 8:
+            printf("funcionalidade %d ainda nao implementada!", option);
+        break;
+
+        //--------
+        case 9:
+            printf("funcionalidade %d ainda nao implementada!", option);
+        break;
+
+        //--------
+        case 10:
+            printf("funcionalidade %d ainda nao implementada!", option);
+        break;
+
+    default:
+        printf("funcionalidade %d não definida!", option);
     }
 
     if(error_flag) printf("Falha no processamento do arquivo.\n");

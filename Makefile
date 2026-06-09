@@ -1,29 +1,33 @@
-all: func_reg.o func_csv.o fornecidas.o main.o
-	gcc func_reg.o func_csv.o fornecidas.o main.o -o programTrab
-	rm *.o
+#compiler
+CC = gcc
+#compilerflags
+CFLAGS = -Wall -Wextra -g
+#output
+TARGET = programTrab
+#sources
+SRCS = main.c auxiliares.c func_Btree.c func_csv.c func_reg.c
 
+#generate object file names from source files
+OBJS = $(SRCS:.c=.o)
 
-all_windows: func_reg.o func_csv.o fornecidas.o  main.o
-	gcc func_reg.o func_csv.o fornecidas.o  main.o -o programTrab
-	del *.o
+# default target
+all: $(TARGET)
 
-func_reg.o:
-	gcc -c func_reg.c
+# link object files
+$(TARGET): $(OBJS)
+	$(CC) $(CFLAGS) -o $(TARGET) $(OBJS)
 
-func_csv.o:
-	gcc -c func_csv.c
+# compile .c files
+%.o: %.c
+	$(CC) $(CFLAGS) -c $< -o $@
 
-fornecidas.o:
-	gcc -c fornecidas.c
-
-main.o:
-	gcc -c main.c
-
-clean_windows:
-	del /Q *.o programTrab
-
+# clean objecs
 clean:
-	rm -f *.o programTrab
+	rm -f $(OBJS) $(TARGET)
 
-run:
+# run
+run: all
 	./programTrab
+
+zip: clean
+	zip trab *.c *.h Makefile -o

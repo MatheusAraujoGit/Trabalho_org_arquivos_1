@@ -1,3 +1,7 @@
+// nesse header:
+// funções relacionadas a manipulação dos registros
+//------------------------------------------------------------------------------------------------------------------------------------------------------------
+
 #ifndef FUNC_REG_H
 #define FUNC_REG_H
 
@@ -5,7 +9,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <stdbool.h>
-#include "fornecidas.h"
+#include "auxiliares.h"
 
 //struct pra registro de header
 typedef struct
@@ -49,59 +53,67 @@ typedef struct
     char *nomeLinha;
 } regCriteria;
 
-//cria registro de dado
-regData createRegister();
+// ----------------------------------------------------------------------------------------------------------------------------------------
+//                                                   funcionalidades do trabalho
+// ----------------------------------------------------------------------------------------------------------------------------------------
 
-//cria registro de critério
-regCriteria createCriteriaRegister();
+    //imprime todos os registros de dados de um binario
+    void printBIN(FILE *BIN);
 
-//ve se o registro de dado satisfaz o registro de criterio
-bool do_they_match(regCriteria criteria, regData data);
+    //cria um registro de criterio, e deleta todos os registros de dados que o satisfazer
+    void delete(FILE* BIN, regHeader* header);
 
-//seta um arquivo como consistente
-void regHeader_setFileConsistent(FILE *file);
+    //insere um registro de dados, aproveitando memoria se possivel
+    void insert(FILE* BIN);
 
-//seta um arquivo como inconsistente
-void regHeader_setFileInconsistent(FILE *file);
+    //cria um registro de criterio e um de atualizaçao, e atualiza todos os
+    //registros que satisfazerem o de criterio com o de atualizaçao
+    void update(FILE* BIN);
 
-//escreve um novo header
-void regHeader_write(FILE *outputBIN, regHeader *pRegCab);
+    //cria um registro de criteiro, e imprime todos os registros que o satisfazerem
+    void search(FILE* BIN);
 
-//Lê um header
-void regHeader_read(FILE *outputBIN, regHeader *pRegCab);
+// ----------------------------------------------------------------------------------------------------------------------------------------
+//                                            funções usadas nas implementações das funcionalidades
+// ----------------------------------------------------------------------------------------------------------------------------------------
 
-//escreve um novo registro de dado
-void regData_write(FILE *outputBIN, regData *pregData);
+    //cria registro de dado
+    regData createRegister();
 
-//imprime um registro de dado
-void regData_printData(regData registro);
+    //cria registro de critério
+    regCriteria createCriteriaRegister();
 
-//recalcula o numero de estaçoes de um binario
-void regHeader_recalculateNEstacoes(FILE* BIN);
+    //ve se o registro de dado satisfaz o registro de criterio
+    bool do_they_match(regCriteria criteria, regData data);
 
-//deleta um registro de dado em RRN (passar o RRN economiza fseeks)
-void regData_DeleteRegistry(FILE* BIN, regHeader* header, int RRN);
+    //seta um arquivo como consistente
+    void regHeader_setFileConsistent(FILE *file);
 
-//atualiza um registro de dado com base num registro de criterio
-void regData_updateReg(FILE* BIN, regCriteria updates, regData old);
+    //seta um arquivo como inconsistente
+    void regHeader_setFileInconsistent(FILE *file);
 
-//imprime todos os registros de dados de um binario
-int regData_printBIN(FILE *BIN);
+    //escreve um novo header
+    void regHeader_write(FILE *outputBIN, regHeader *pRegCab);
 
-//cria um registro de criterio, e deleta todos os registros de dados que o satisfazer
-void search_and_delete(FILE* BIN, regHeader* header);
+    //Lê um header
+    void regHeader_read(FILE *outputBIN, regHeader *pRegCab);
 
-//insere um registro de dados, aproveitando memoria se possivel
-void insert(FILE* BIN);
+    //lê um registro de dado
+    int regData_read(FILE *BIN, regData *pregData);
 
-//cria um registro de criterio e um de atualizaçao, e atualiza todos os
-//registros que satisfazerem o de criterio com o de atualizaçao
-void update(FILE* BIN);
+    //escreve um novo registro de dado
+    void regData_write(FILE *outputBIN, regData *pregData);
 
-//cria um registro de criteiro, e imprime todos os registros que o satisfazerem
-int print_with_criteria(FILE* BIN);
+    //imprime um registro de dado
+    void regData_printData(regData registro);
 
-//calcular hash de uma string. auxiliar pra deixar o calculo do Nestações mais eficiente
-int fnv1a_hash(const char* str);
+    //recalcula o numero de estaçoes de um binario
+    void regHeader_updateNEstacoes(FILE* BIN);
+
+    //deleta um registro de dado em RRN (passar o RRN economiza fseeks)
+    void regData_DeleteRegistry(FILE* BIN, regHeader* header, int RRN);
+
+    //atualiza um registro de dado com base num registro de criterio
+    void regData_updateReg(FILE* BIN, regCriteria updates, regData old);
 
 #endif
