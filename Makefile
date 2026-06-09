@@ -7,7 +7,7 @@ TARGET = programTrab
 #sources
 SRCS = main.c auxiliares.c func_Btree.c func_csv.c func_reg.c
 
-#generate object file names from source files
+#get object file names from source files
 OBJS = $(SRCS:.c=.o)
 
 # default target
@@ -21,7 +21,7 @@ $(TARGET): $(OBJS)
 %.o: %.c
 	$(CC) $(CFLAGS) -c $< -o $@
 
-# clean objecs
+# clean objects
 clean:
 	rm -f $(OBJS) $(TARGET)
 
@@ -29,5 +29,6 @@ clean:
 run: all
 	./programTrab
 
+# make zip
 zip: clean
 	zip trab *.c *.h Makefile -o

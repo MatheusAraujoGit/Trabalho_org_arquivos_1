@@ -185,7 +185,7 @@ void regHeader_write(FILE *outputBIN, regHeader *pRegHeader){
 //escreve um registro de dado em pregData na posição atual do arquivo
 void regData_write(FILE *outputBIN, regData *pregData){
     fwrite(&(pregData->removido), sizeof(char), 1, outputBIN);                         // off 0
-    fwrite(&(pregData->proxRemovido), sizeof(int), 1, outputBIN);                           // off 1
+    fwrite(&(pregData->proxRemovido), sizeof(int), 1, outputBIN);                      // off 1
     fwrite(&(pregData->codEstacao), sizeof(int), 1, outputBIN);                        // off 5
     fwrite(&(pregData->codLinha), sizeof(int), 1, outputBIN);                          // off 9
     fwrite(&(pregData->codProxEstacao), sizeof(int), 1, outputBIN);                    // off 13
