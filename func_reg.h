@@ -61,7 +61,7 @@ typedef struct
     void printBIN(FILE *BIN);
 
     //cria um registro de criterio, e deleta todos os registros de dados que o satisfazer
-    void delete(FILE* BIN, regHeader* header);
+    void delete(FILE* BIN);
 
     //insere um registro de dados, aproveitando memoria se possivel
     void insert(FILE* BIN);

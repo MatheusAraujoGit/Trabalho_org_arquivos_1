@@ -73,7 +73,7 @@ int main()
 
         break;
 
-        //-------- checar essa funcionalidade: não passa um caso do runcodes. talvez algo a ver com o bgl de parar quando a pesquisa for por nroestação?
+        //-------- 
         case 3: // funcionalidade 3: pesquisar e imprimir n registros
 
             //ler nome do arquivo
@@ -130,11 +130,10 @@ int main()
 
             //executar funcionalidade n vezes
             for (int i = 0; i < n; i++){
-                delete(BIN, &header);
+                delete(BIN);
             }
 
             //atualizar header, setar arquivo como consistente, fechar e imprimir
-            regHeader_write(BIN, &header);
             regHeader_updateNEstacoes(BIN);
             regHeader_setFileConsistent(BIN);
             fclose(BIN);
@@ -217,7 +216,8 @@ int main()
         break;
 
         //--------
-        case 7:
+        case 7: // funcionalidade 7: inserir n registros
+
             printf("funcionalidade %d ainda nao implementada!", option);
         break;
 

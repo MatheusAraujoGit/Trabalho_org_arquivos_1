@@ -57,22 +57,23 @@ void update(FILE* BIN){
 }
 
 //cria um registro de criterios, e deleta todos os registros no bin que satisfazem o criterio
-void delete(FILE* BIN, regHeader* header){
+void delete(FILE* BIN){
     regData tempData;
     regCriteria criteria;
+    regHeader header;
 
     tempData.nomeEstacao = NULL;
     tempData.nomeLinha = NULL;
 
     criteria = createCriteriaRegister();
-    fseek(BIN, 17, SEEK_SET); // começar a busca após o cabeçalho
+    regHeader_read(BIN, &header);
 
     int RRN = -1;
     while(regData_read(BIN, &tempData) != -1){
         RRN++;
         if(tempData.removido == '1') continue;
         if(do_they_match(criteria,tempData)){
-            regData_DeleteRegistry(BIN, header, RRN);
+            regData_DeleteRegistry(BIN, &header, RRN);
 
             //codEstacao só existe um, então ja posso parar
             if(criteria.codEstacao != -2){
@@ -90,6 +91,9 @@ void delete(FILE* BIN, regHeader* header){
         free(criteria.nomeEstacao);
     if (criteria.nomeLinha != NULL)
         free(criteria.nomeLinha);
+
+    //escrever header atualizado
+    regHeader_write(BIN, &header);
     
     return;
 }
@@ -132,6 +136,8 @@ void search(FILE* BIN){
     
     criteria = createCriteriaRegister();
 
+    fseek(BIN, 17, SEEK_SET);
+
     bool found_one = false;
     while(regData_read(BIN, &tempData) != -1){
         if(do_they_match(criteria,tempData)){
@@ -153,7 +159,6 @@ void search(FILE* BIN){
     if (criteria.nomeEstacao != NULL) free(criteria.nomeEstacao);
     if (criteria.nomeLinha != NULL) free(criteria.nomeLinha);
 }
-
 // ----------------------------------------------------------------------------------------------------------------------------------------
 //                                            funções usadas nas implementações das funcionalidades
 // ----------------------------------------------------------------------------------------------------------------------------------------
