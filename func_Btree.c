@@ -4,7 +4,42 @@
 //                                                   funcionalidades do trabalho
 // ----------------------------------------------------------------------------------------------------------------------------------------
 
-    void func7(){}
+    void create_btree_index(FILE* BtreeBIN, FILE* dataBIN){
+        Btree_Header new_head;
+        regData temp_reg;
+
+        new_head.status = '0';
+        new_head.noRaiz = -1;
+        new_head.topo = -1;
+        new_head.proxRRN = 0;
+        new_head.nroNos = 0;
+
+        temp_reg.nomeEstacao = NULL;
+        temp_reg.nomeLinha = NULL;
+
+        int status_leitura;
+        int current_pos = 17;
+        while((status_leitura = regData_read(dataBIN, &temp_reg)) != -1){
+            current_pos += 80;
+
+            // Se o registro for válido, inserir. Se não, ignorar
+            if(status_leitura == 1){ 
+                insert_in_btree(BtreeBIN, &new_head, temp_reg.codEstacao, current_pos-80);
+                
+                //pesadelos pq decidimos que nossas strings sao dinamicas
+                if(temp_reg.nomeEstacao != NULL){
+                    free(temp_reg.nomeEstacao);
+                    temp_reg.nomeEstacao = NULL;
+                }
+                 if(temp_reg.nomeLinha != NULL){
+                     free(temp_reg.nomeLinha);
+                     temp_reg.nomeLinha = NULL;
+                }
+            }
+        }
+
+        Btree_WriteHeader(BtreeBIN, &new_head);
+    }
 
     void search_in_btree(FILE* BtreeBIN, FILE* dataBIN, Btree_Header head){
         regCriteria criteria;        
@@ -197,7 +232,21 @@ void Btree_WriteNode(FILE* BtreeBIN, Btree_Node* node){
     fwrite(&node->P2, sizeof(int), 1, BtreeBIN);
     fwrite(&node->P3, sizeof(int), 1, BtreeBIN);
     fwrite(&node->P4, sizeof(int), 1, BtreeBIN);
- }
+}
+
+//seta um arquivo como consistente
+void Btree_setFileConsistent(FILE* BtreeBIN){
+    fseek(BtreeBIN, 0, SEEK_SET);
+    char temp = '1';
+    fwrite(&temp, sizeof(char), 1, BtreeBIN);
+}
+
+//seta um arquivo como inconsistente
+void Btree_setFileInconsistent(FILE* BtreeBIN){
+    fseek(BtreeBIN, 0, SEEK_SET);
+    char temp = '0';
+    fwrite(&temp, sizeof(char), 1, BtreeBIN);
+}
 
 int search_aux(int key, Btree_Node node){
     if(node.C1 == key || node.C2 == key || node.C3 == key) return -2;

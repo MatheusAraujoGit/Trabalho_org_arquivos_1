@@ -137,28 +137,24 @@ int insert_no_keyboard(FILE* BIN, regHeader* head, regData inputReg){
     
     if(head->topo != -1){
         return_value = 17 + head->topo * 80;
+
         fseek(BIN, 17 + head->topo * 80, SEEK_SET);
-        
         regData curr_top;
         curr_top.nomeEstacao = NULL;
         curr_top.nomeLinha = NULL;
-        
         regData_read(BIN, &curr_top);
         fseek(BIN, -80, SEEK_CUR);
-        
         regData_write(BIN, &inputReg);
-        
         head->topo = curr_top.proxRemovido;
         if(inputReg.codProxEstacao != -1) head->nParesEstacao = head->nParesEstacao + 1;
-        
+
         return return_value;               
     }
     else{
         return_value = 17 + head->proxRRN * 80;
+
         fseek(BIN, 17 + (head->proxRRN) * 80, SEEK_SET);
-        
         regData_write(BIN, &inputReg);
-        
         head->proxRRN = head->proxRRN + 1;
         if(inputReg.codProxEstacao != -1) head->nParesEstacao = head->nParesEstacao + 1;
         
@@ -236,15 +232,15 @@ void search_no_keyboard(FILE*BIN, regCriteria criteria){
 //pega um arquivo já aberto e coloca ele como consistente
 void regHeader_setFileConsistent(FILE* file){
     fseek(file, 0, SEEK_SET);
-    const char consistent = '1';
-    fwrite(&consistent, sizeof(char), 1, file);
+    char temp = '1';
+    fwrite(&temp, sizeof(char), 1, file);
 }
 
 //pega um arquivo já aberto e coloca ele como inconsistente
 void regHeader_setFileInconsistent(FILE* file){
     fseek(file, 0, SEEK_SET);
-    const char inconsistent = '0';
-    fwrite(&inconsistent, sizeof(char), 1, file);
+    char temp = '0';
+    fwrite(&temp, sizeof(char), 1, file);
 }
 
 //vai para o começo do arquivo e escreve um registro de header em pRegheader

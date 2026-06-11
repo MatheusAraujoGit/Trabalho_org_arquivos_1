@@ -227,7 +227,7 @@ int main()
             scanf("%s", bin_name);
             scanf("%s", btree_name);
 
-            //tentar abrir arquivo de dados + errorcheck
+            //tentar abrir arquivos + errorcheck
             BIN = fopen(bin_name, "rb");
             if (BIN == NULL){
                 error_flag = true;
@@ -240,49 +240,19 @@ int main()
                 break;
             }
 
-            //criar arvore b
-            BTREE = fopen(btree_name, "wb+"); //wb+ pq eu faço reads no meu insert_recursion
+            BTREE = fopen(btree_name, "wb+");
             if (BTREE == NULL){
                 error_flag = true;
                 fclose(BIN);
                 break;
             }
-            Btreehead.status = '0';
-            Btreehead.noRaiz = -1;
-            Btreehead.topo = -1;
-            Btreehead.proxRRN = 0;
-            Btreehead.nroNos = 0;
-            Btree_WriteHeader(BTREE, &Btreehead);
 
-            regData reg;
-            reg.nomeEstacao = NULL;
-            reg.nomeLinha = NULL;
+            //setar inconsistente e executar funcionalidade
+            Btree_setFileInconsistent(BTREE);
+            create_btree_index(BTREE, BIN);
 
-            //Vou varrendo o bin para criar a arvore b
-            int status_leitura;
-            while((status_leitura = regData_read(BIN, &reg)) != -1){
-                
-                // Se o registro for válido
-                if(status_leitura == 1){ 
-                    insert_in_btree(BTREE, &Btreehead, reg.codEstacao, ftell(BIN) - 80);
-                    
-                    if(reg.nomeEstacao != NULL){
-                        free(reg.nomeEstacao);
-                        reg.nomeEstacao = NULL;
-                    }
-                    if(reg.nomeLinha != NULL){
-                        free(reg.nomeLinha);
-                        reg.nomeLinha = NULL;
-                    }
-                }
-            }
-
-            //Consistencia
-            Btreehead.status = '1';
-            fseek(BTREE, 0, SEEK_SET);
-            Btree_WriteHeader(BTREE, &Btreehead);
-
-            //fechar arquivos e imprimir
+            //setar consistente, fechar arquivos e imprimir
+            Btree_setFileConsistent(BTREE);
             fclose(BIN);
             fclose(BTREE);
             BinarioNaTela(btree_name);
@@ -361,7 +331,7 @@ int main()
                 fclose(BIN);
                 break;
             }
-            Btreehead= Btree_ReadHeader(BTREE);
+            Btreehead = Btree_ReadHeader(BTREE);
             if(Btreehead.status == '0'){
                 error_flag = true;
                 fclose(BIN);
@@ -369,11 +339,9 @@ int main()
                 break;
             }
 
-            //setar arquivo como inconsistente
+            //setar arquivos como inconsistentes
             regHeader_setFileInconsistent(BIN);
-
-            Btreehead.status = '0';
-            Btree_WriteHeader(BTREE, &Btreehead);
+            Btree_setFileInconsistent(BTREE);
     
             //ler n
             scanf("%d ", &n);
@@ -390,12 +358,13 @@ int main()
                 if(tempData.nomeLinha != NULL) free(tempData.nomeLinha);
             }
 
-            //atualizar header, setar arquivo como consistente, fechar e imprimir
+            //atualizar header, setar arquivos como consistentes
             regHeader_write(BIN, &header);
             regHeader_updateNEstacoes(BIN);
             regHeader_setFileConsistent(BIN);
-            Btreehead.status = '1';
-            Btree_WriteHeader(BTREE, &Btreehead);
+            Btree_setFileConsistent(BTREE);
+
+            //fechar e imprimir
             fclose(BIN);
             fclose(BTREE);
             BinarioNaTela(bin_name);

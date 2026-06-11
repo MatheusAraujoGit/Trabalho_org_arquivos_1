@@ -47,7 +47,7 @@ typedef struct {
 //                                                   funcionalidades do trabalho
 // ----------------------------------------------------------------------------------------------------------------------------------------
 
-    void func7();
+    void create_btree_index(FILE* BtreeBIN, FILE* dataBIN);
 
     //Insere registro na arvore B
     void insert_in_btree(FILE* BtreeBIN, Btree_Header* head, int key, int offset);
@@ -75,6 +75,12 @@ typedef struct {
     
     //escreve um nó de arvore b na posição atual do arquivo (a partir de um ponteiro pra nó)
     void Btree_WriteNode(FILE* BtreeBIN, Btree_Node* node);
+
+    //seta um arquivo como consistente
+    void Btree_setFileConsistent(FILE* BtreeBIN);
+
+    //seta um arquivo como inconsistente
+    void Btree_setFileInconsistent(FILE* BtreeBIN);
     
     //aux pra pesquisa - volta pra qual ponteiro ir na pesquisa;
     //-2 = match pra chave encontrada nesse nó
