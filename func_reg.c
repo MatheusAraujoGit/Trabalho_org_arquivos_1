@@ -127,6 +127,7 @@ void insert(FILE* BIN){
     }
 }
 
+//cria um registro de criteiro, e imprime todos os registros que o satisfazerem
 void search(FILE* BIN){
     regData tempData;
     regCriteria criteria;
@@ -159,6 +160,36 @@ void search(FILE* BIN){
     if (criteria.nomeEstacao != NULL) free(criteria.nomeEstacao);
     if (criteria.nomeLinha != NULL) free(criteria.nomeLinha);
 }
+
+//imprime todos os registros que satisfazem um registro de criterio que ja existe
+void search_no_keyboard(FILE*BIN, regCriteria criteria){
+    regData tempData;
+
+    tempData.nomeEstacao = NULL;
+    tempData.nomeLinha = NULL;
+
+    fseek(BIN, 17, SEEK_SET);
+
+    bool found_one = false;
+    while(regData_read(BIN, &tempData) != -1){
+        if(do_they_match(criteria,tempData)){
+            regData_printData(tempData);
+            found_one = true;
+            
+            //Se for a busca usar o codEstacao e achar eu posso já parar aqui
+            if(criteria.codEstacao != -2){
+                break;
+            }
+        }
+    }
+
+    if(!found_one) printf("Registro inexistente.\n");
+    printf("\n");
+
+    if (tempData.nomeEstacao != NULL) free(tempData.nomeEstacao);
+    if (tempData.nomeLinha != NULL) free(tempData.nomeLinha);
+}
+
 // ----------------------------------------------------------------------------------------------------------------------------------------
 //                                            funções usadas nas implementações das funcionalidades
 // ----------------------------------------------------------------------------------------------------------------------------------------

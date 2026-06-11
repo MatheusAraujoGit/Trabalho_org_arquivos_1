@@ -73,6 +73,9 @@ typedef struct
     //cria um registro de criteiro, e imprime todos os registros que o satisfazerem
     void search(FILE* BIN);
 
+    //faz a função de search mas com um regCriteria passado pela função
+    void search_no_keyboard(FILE*BIN, regCriteria criteria);
+
 // ----------------------------------------------------------------------------------------------------------------------------------------
 //                                            funções usadas nas implementações das funcionalidades
 // ----------------------------------------------------------------------------------------------------------------------------------------

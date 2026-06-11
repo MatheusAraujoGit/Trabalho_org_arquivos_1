@@ -13,9 +13,14 @@ int main()
 {
     char csv_name[100];
     char bin_name[100];
+    char btree_name[100];
     FILE* CSV;
     FILE* BIN;
+    FILE* BTREE;
     regHeader header;
+    Btree_Header Btreehead;
+
+
     int option = -1;
     int n = 0;
     bool error_flag = false;
@@ -222,8 +227,45 @@ int main()
         break;
 
         //--------
-        case 8:
-            printf("funcionalidade %d ainda nao implementada!", option);
+        case 8: // funcionalidade 8: ler e imprimir n registros com arvore B
+            //ler nome dos arquivos
+            scanf("%s", bin_name);
+            scanf("%s", btree_name);
+
+            //tentar abrir arquivos + errorcheck
+            BIN = fopen(bin_name, "rb");
+            if (BIN == NULL){
+                error_flag = true;
+                break;
+            }
+            regHeader_read(BIN, &header);
+            if(header.status == '0'){
+                error_flag = true;
+                break;
+            }
+
+            BTREE = fopen(btree_name, "rb");
+            if (BTREE == NULL){
+                error_flag = true;
+                break;
+            }
+            Btreehead= Btree_ReadHeader(BTREE);
+            if(Btreehead.status == '0'){
+                error_flag = true;
+                break;
+            }
+
+            //ler n
+            scanf("%d ", &n);
+
+            //executar a funcionalidade n vezes
+            for (int i = 0; i < n; i++){
+                search_in_btree(BTREE, BIN, Btreehead);
+            }
+            
+            //fechar arquivos
+            fclose(BIN);
+            fclose(BTREE);
         break;
 
         //--------

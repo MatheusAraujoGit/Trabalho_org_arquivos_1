@@ -14,6 +14,23 @@ int fnv1a_hash(const char* str) {
     return hash;
 }
 
+//converte um rrn pra byte offset da arvore B, e vice-versa
+int BTree_RRN2BYTE(int RRN){
+    return 17+53*RRN;
+}
+int BTree_BYTE2RRN(int BYTE){
+    return (BYTE-17)/53;
+}
+
+//converte um rrn pra byte offset do arquivo de dados, e vice-versa
+int Data_RRN2BYTE(int RRN){
+    return 17+80*RRN;
+}
+int Data_BYTE2RRN(int BYTE){
+    return (BYTE-17)/80;
+}
+
+
 //fornecida
 void BinarioNaTela(char *arquivo) {
     FILE *fs;
