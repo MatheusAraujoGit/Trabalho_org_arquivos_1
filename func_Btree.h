@@ -49,12 +49,12 @@ typedef struct {
 
     void create_btree_index(FILE* BtreeBIN, FILE* dataBIN);
 
-    //Insere registro na arvore B
-    void insert_in_btree(FILE* BtreeBIN, Btree_Header* head, int key, int offset);
-
     
     //procurar e imprimir usando indice da arvore B
     void search_in_btree(FILE* BtreeBIN, FILE* dataBIN, Btree_Header head);
+
+    //Lê do teclado n registros e insere no arquivo de dados e na árvore-B
+    void insert_with_btree(FILE* BtreeBIN, FILE* dataBIN, regHeader* dataHeader, Btree_Header* BtreeHead, int nRegisters);
     
     void func9();
     
@@ -75,10 +75,10 @@ typedef struct {
     
     //escreve um nó de arvore b na posição atual do arquivo (a partir de um ponteiro pra nó)
     void Btree_WriteNode(FILE* BtreeBIN, Btree_Node* node);
-
+    
     //seta um arquivo como consistente
     void Btree_setFileConsistent(FILE* BtreeBIN);
-
+    
     //seta um arquivo como inconsistente
     void Btree_setFileInconsistent(FILE* BtreeBIN);
     
@@ -94,19 +94,21 @@ typedef struct {
     //retorna RRN do arquivo de dados ou RRN da folha vazia de onde a pesquisa cair
     //a struct tem um bool pra dizer qual tipo achou
     searchstruct Btree_Search(FILE* BtreeBIN, int key, int RRN);
-
+    
     //Insere ordernado em um nó que não está cheio e escreve em disco
     void write_into_incomplete_node(FILE* BtreeBIN, int RRN, int key, int offset, int right_child);
-
+    
     //faz o split de acordo com a especificação
     void split_node(FILE* BtreeBIN, Btree_Header* head, int full_RRN, 
-                int new_key, int new_offset, int new_right_child,
-                int* promo_key, int* promo_offset, int* promo_right_child);
-
+        int new_key, int new_offset, int new_right_child,
+        int* promo_key, int* promo_offset, int* promo_right_child);
+        
     //Funcao auxiliar para insert_in_btree
     //1 = promotion, 0 = no promotion, -1 = chave duplicada
     int insert_recursion(FILE* BtreeBIN, Btree_Header* head, int curr_RRN, //coisas de arquivo
-                        int key, int offset,        //O que eu quero inserir
-                        int* promo_key, int* promo_offset, int* promo_right_child);
-    
-#endif
+        int key, int offset,        //O que eu quero inserir
+        int* promo_key, int* promo_offset, int* promo_right_child);
+            
+    //Insere registro na arvore B
+    void insert_btree(FILE* BtreeBIN, Btree_Header* head, int key, int offset);
+ #endif

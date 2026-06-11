@@ -307,7 +307,6 @@ int main()
 
         //--------
         case 9: // funcionalidade 9: inserir n registros com btree
-
             //ler nome dos arquivos
             scanf("%s", bin_name);
             scanf("%s", btree_name);
@@ -324,7 +323,6 @@ int main()
                 fclose(BIN);
                 break;
             }
-
             BTREE = fopen(btree_name, "rb+");
             if (BTREE == NULL){
                 error_flag = true;
@@ -345,28 +343,16 @@ int main()
     
             //ler n
             scanf("%d ", &n);
+            insert_with_btree(BTREE, BIN, &header, &Btreehead, n);
 
-            //executar funcionalidade n vezes
-            for (int i = 0; i < n; i++){
-                regData tempData = createRegister();
-
-                //Inserir
-                int offset = insert_no_keyboard(BIN, &header, tempData);
-                insert_in_btree(BTREE, &Btreehead, tempData.codEstacao, offset);
-
-                if(tempData.nomeEstacao != NULL) free(tempData.nomeEstacao);
-                if(tempData.nomeLinha != NULL) free(tempData.nomeLinha);
-            }
-
-            //atualizar header, setar arquivos como consistentes
-            regHeader_write(BIN, &header);
-            regHeader_updateNEstacoes(BIN);
+            //consistência
             regHeader_setFileConsistent(BIN);
             Btree_setFileConsistent(BTREE);
 
             //fechar e imprimir
             fclose(BIN);
             fclose(BTREE);
+
             BinarioNaTela(bin_name);
             BinarioNaTela(btree_name);
 
