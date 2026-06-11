@@ -25,6 +25,9 @@ $(TARGET): $(OBJS)
 clean:
 	rm -f $(OBJS) $(TARGET)
 
+clean_windows:
+	del /f /q $(OBJS) $(TARGET)
+
 # run
 run: all
 	./programTrab
@@ -32,3 +35,6 @@ run: all
 # make zip
 zip: clean
 	zip trab *.c *.h Makefile -o
+
+zip_windows: clean_windows
+	tar -a -cf trab.zip *.c *.h Makefile

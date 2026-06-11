@@ -49,29 +49,33 @@ typedef struct {
 
     void func7();
 
+    //Insere registro na arvore B
+    void insert_in_btree(FILE* BtreeBIN, Btree_Header* head, int key, int offset);
+
+    
     //procurar e imprimir usando indice da arvore B
     void search_in_btree(FILE* BtreeBIN, FILE* dataBIN, Btree_Header head);
-
+    
     void func9();
-
+    
     void func10();
-
-// ----------------------------------------------------------------------------------------------------------------------------------------
-//                                            funções usadas nas implementações das funcionalidades
-// ----------------------------------------------------------------------------------------------------------------------------------------
-
+    
+    // ----------------------------------------------------------------------------------------------------------------------------------------
+    //                                            funções usadas nas implementações das funcionalidades
+    // ----------------------------------------------------------------------------------------------------------------------------------------
+    
     //vai para o começo do arquivo de indice e o retorna
     Btree_Header Btree_ReadHeader(FILE* BtreeBIN);
-
+    
     //vai para o começo do indice, e sobreescreve o header (a partir de um ponteiro pra header)
     void Btree_WriteHeader(FILE* BtreeBIN, Btree_Header* new_head);
-
+    
     //lê um nó de arvore b na posição atual do arquivo e o retorna
     Btree_Node Btree_ReadNode(FILE* BtreeBIN);
-
+    
     //escreve um nó de arvore b na posição atual do arquivo (a partir de um ponteiro pra nó)
     void Btree_WriteNode(FILE* BtreeBIN, Btree_Node* node);
-
+    
     //aux pra pesquisa - volta pra qual ponteiro ir na pesquisa;
     //-2 = match pra chave encontrada nesse nó
     //chave está antes de c1 -> retorna ponteiro 1
@@ -79,10 +83,24 @@ typedef struct {
     //chave está entre c2 e c3 -> retorna ponteiro 3
     //chave está depois de c3 -> retorna ponteiro 4
     int search_aux(int key, Btree_Node node);
-
+    
     //pesquisa uma chave na arvore b;
     //retorna RRN do arquivo de dados ou RRN da folha vazia de onde a pesquisa cair
     //a struct tem um bool pra dizer qual tipo achou
     searchstruct Btree_Search(FILE* BtreeBIN, int key, int RRN);
 
+    //Insere ordernado em um nó que não está cheio e escreve em disco
+    void write_into_incomplete_node(FILE* BtreeBIN, int RRN, int key, int offset, int right_child);
+
+    //faz o split de acordo com a especificação
+    void split_node(FILE* BtreeBIN, Btree_Header* head, int full_RRN, 
+                int new_key, int new_offset, int new_right_child,
+                int* promo_key, int* promo_offset, int* promo_right_child);
+
+    //Funcao auxiliar para insert_in_btree
+    //1 = promotion, 0 = no promotion, -1 = chave duplicada
+    int insert_recursion(FILE* BtreeBIN, Btree_Header* head, int curr_RRN, //coisas de arquivo
+                        int key, int offset,        //O que eu quero inserir
+                        int* promo_key, int* promo_offset, int* promo_right_child);
+    
 #endif

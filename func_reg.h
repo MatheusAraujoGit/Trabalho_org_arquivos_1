@@ -66,6 +66,9 @@ typedef struct
     //insere um registro de dados, aproveitando memoria se possivel
     void insert(FILE* BIN);
 
+    //Insere sem a parte do teclado e retorna offset do registro adicionado
+    int insert_no_keyboard(FILE*BIN, regHeader* head, regData inputReg);
+
     //cria um registro de criterio e um de atualizaçao, e atualiza todos os
     //registros que satisfazerem o de criterio com o de atualizaçao
     void update(FILE* BIN);

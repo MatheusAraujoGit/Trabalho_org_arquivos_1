@@ -221,9 +221,72 @@ int main()
         break;
 
         //--------
-        case 7: // funcionalidade 7: inserir n registros
+        case 7: // funcionalidade 7: criar índice árvore-B
 
-            printf("funcionalidade %d ainda nao implementada!", option);
+            //ler nome dos arquivos
+            scanf("%s", bin_name);
+            scanf("%s", btree_name);
+
+            //tentar abrir arquivo de dados + errorcheck
+            BIN = fopen(bin_name, "rb");
+            if (BIN == NULL){
+                error_flag = true;
+                break;
+            }
+            regHeader_read(BIN, &header);
+            if(header.status == '0'){
+                error_flag = true;
+                fclose(BIN);
+                break;
+            }
+
+            //criar arvore b
+            BTREE = fopen(btree_name, "wb+"); //wb+ pq eu faço reads no meu insert_recursion
+            if (BTREE == NULL){
+                error_flag = true;
+                fclose(BIN);
+                break;
+            }
+            Btreehead.status = '0';
+            Btreehead.noRaiz = -1;
+            Btreehead.topo = -1;
+            Btreehead.proxRRN = 0;
+            Btreehead.nroNos = 0;
+            Btree_WriteHeader(BTREE, &Btreehead);
+
+            regData reg;
+            reg.nomeEstacao = NULL;
+            reg.nomeLinha = NULL;
+
+            //Vou varrendo o bin para criar a arvore b
+            int status_leitura;
+            while((status_leitura = regData_read(BIN, &reg)) != -1){
+                
+                // Se o registro for válido
+                if(status_leitura == 1){ 
+                    insert_in_btree(BTREE, &Btreehead, reg.codEstacao, ftell(BIN) - 80);
+                    
+                    if(reg.nomeEstacao != NULL){
+                        free(reg.nomeEstacao);
+                        reg.nomeEstacao = NULL;
+                    }
+                    if(reg.nomeLinha != NULL){
+                        free(reg.nomeLinha);
+                        reg.nomeLinha = NULL;
+                    }
+                }
+            }
+
+            //Consistencia
+            Btreehead.status = '1';
+            fseek(BTREE, 0, SEEK_SET);
+            Btree_WriteHeader(BTREE, &Btreehead);
+
+            //fechar arquivos e imprimir
+            fclose(BIN);
+            fclose(BTREE);
+            BinarioNaTela(btree_name);
+
         break;
 
         //--------
@@ -241,17 +304,21 @@ int main()
             regHeader_read(BIN, &header);
             if(header.status == '0'){
                 error_flag = true;
+                fclose(BIN);
                 break;
             }
 
             BTREE = fopen(btree_name, "rb");
             if (BTREE == NULL){
                 error_flag = true;
+                fclose(BIN);
                 break;
             }
             Btreehead= Btree_ReadHeader(BTREE);
             if(Btreehead.status == '0'){
                 error_flag = true;
+                fclose(BIN);
+                fclose(BTREE);
                 break;
             }
 
@@ -269,8 +336,71 @@ int main()
         break;
 
         //--------
-        case 9:
-            printf("funcionalidade %d ainda nao implementada!", option);
+        case 9: // funcionalidade 9: inserir n registros com btree
+
+            //ler nome dos arquivos
+            scanf("%s", bin_name);
+            scanf("%s", btree_name);
+
+            //tentar abrir arquivos + errorcheck
+            BIN = fopen(bin_name, "rb+");
+            if (BIN == NULL){
+                error_flag = true;
+                break;
+            }
+            regHeader_read(BIN, &header);
+            if(header.status == '0'){
+                error_flag = true;
+                fclose(BIN);
+                break;
+            }
+
+            BTREE = fopen(btree_name, "rb+");
+            if (BTREE == NULL){
+                error_flag = true;
+                fclose(BIN);
+                break;
+            }
+            Btreehead= Btree_ReadHeader(BTREE);
+            if(Btreehead.status == '0'){
+                error_flag = true;
+                fclose(BIN);
+                fclose(BTREE);
+                break;
+            }
+
+            //setar arquivo como inconsistente
+            regHeader_setFileInconsistent(BIN);
+
+            Btreehead.status = '0';
+            Btree_WriteHeader(BTREE, &Btreehead);
+    
+            //ler n
+            scanf("%d ", &n);
+
+            //executar funcionalidade n vezes
+            for (int i = 0; i < n; i++){
+                regData tempData = createRegister();
+
+                //Inserir
+                int offset = insert_no_keyboard(BIN, &header, tempData);
+                insert_in_btree(BTREE, &Btreehead, tempData.codEstacao, offset);
+
+                if(tempData.nomeEstacao != NULL) free(tempData.nomeEstacao);
+                if(tempData.nomeLinha != NULL) free(tempData.nomeLinha);
+            }
+
+            //atualizar header, setar arquivo como consistente, fechar e imprimir
+            regHeader_write(BIN, &header);
+            regHeader_updateNEstacoes(BIN);
+            regHeader_setFileConsistent(BIN);
+            Btreehead.status = '1';
+            Btree_WriteHeader(BTREE, &Btreehead);
+            fclose(BIN);
+            fclose(BTREE);
+            BinarioNaTela(bin_name);
+            BinarioNaTela(btree_name);
+
         break;
 
         //--------

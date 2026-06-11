@@ -125,6 +125,45 @@ void insert(FILE* BIN){
         if(tempData.codProxEstacao != -1) tempHead.nParesEstacao = tempHead.nParesEstacao+1;
         regHeader_write(BIN, &tempHead);
     }
+
+    if (tempData.nomeEstacao != NULL) free(tempData.nomeEstacao);
+    if (tempData.nomeLinha != NULL) free(tempData.nomeLinha);
+}
+
+//Insere sem a parte do teclado e retorna o offset do registro adicionado
+int insert_no_keyboard(FILE* BIN, regHeader* head, regData inputReg){
+    
+    int return_value = -1;
+    
+    if(head->topo != -1){
+        return_value = 17 + head->topo * 80;
+        fseek(BIN, 17 + head->topo * 80, SEEK_SET);
+        
+        regData curr_top;
+        curr_top.nomeEstacao = NULL;
+        curr_top.nomeLinha = NULL;
+        
+        regData_read(BIN, &curr_top);
+        fseek(BIN, -80, SEEK_CUR);
+        
+        regData_write(BIN, &inputReg);
+        
+        head->topo = curr_top.proxRemovido;
+        if(inputReg.codProxEstacao != -1) head->nParesEstacao = head->nParesEstacao + 1;
+        
+        return return_value;               
+    }
+    else{
+        return_value = 17 + head->proxRRN * 80;
+        fseek(BIN, 17 + (head->proxRRN) * 80, SEEK_SET);
+        
+        regData_write(BIN, &inputReg);
+        
+        head->proxRRN = head->proxRRN + 1;
+        if(inputReg.codProxEstacao != -1) head->nParesEstacao = head->nParesEstacao + 1;
+        
+        return return_value;
+    }
 }
 
 //cria um registro de criteiro, e imprime todos os registros que o satisfazerem
