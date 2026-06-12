@@ -297,7 +297,7 @@ int main()
 
             //executar a funcionalidade n vezes
             for (int i = 0; i < n; i++){
-                search_in_btree(BTREE, BIN, Btreehead);
+                search_in_btree(BTREE, BIN);
             }
             
             //fechar arquivos
@@ -343,9 +343,13 @@ int main()
     
             //ler n
             scanf("%d ", &n);
-            insert_with_btree(BTREE, BIN, &header, &Btreehead, n);
 
-            //consistência
+            //executar funcionalidade n vezes
+            for(int i = 0; i<n; i++){
+                insert_with_btree(BTREE, BIN);
+            }
+
+            //setar arquivos como consistentes
             regHeader_setFileConsistent(BIN);
             Btree_setFileConsistent(BTREE);
 

@@ -111,55 +111,62 @@ void insert(FILE* BIN){
     if(tempHead.topo != -1){
         fseek(BIN,17 + tempHead.topo*80,SEEK_SET);
         regData curr_top;
+        curr_top.nomeEstacao = NULL;
+        curr_top.nomeLinha = NULL;
         regData_read(BIN, &curr_top);
         fseek(BIN, -80, SEEK_CUR);
         regData_write(BIN, &tempData);
         tempHead.topo = curr_top.proxRemovido;
-        if(tempData.codProxEstacao != -1) tempHead.nParesEstacao = tempHead.nParesEstacao+1;
-        regHeader_write(BIN, &tempHead);                     
+
+        if (curr_top.nomeEstacao != NULL) free(curr_top.nomeEstacao);
+        if (curr_top.nomeLinha != NULL) free(curr_top.nomeLinha);
     }
     else{
-        fseek(BIN,17 + (tempHead.proxRRN)*80,SEEK_SET);
+        fseek(BIN,17 + tempHead.proxRRN*80,SEEK_SET);
         regData_write(BIN, &tempData);
         tempHead.proxRRN = tempHead.proxRRN+1;
-        if(tempData.codProxEstacao != -1) tempHead.nParesEstacao = tempHead.nParesEstacao+1;
-        regHeader_write(BIN, &tempHead);
     }
+
+    if(tempData.codProxEstacao != -1) tempHead.nParesEstacao = tempHead.nParesEstacao+1;
+    regHeader_write(BIN, &tempHead);
 
     if (tempData.nomeEstacao != NULL) free(tempData.nomeEstacao);
     if (tempData.nomeLinha != NULL) free(tempData.nomeLinha);
 }
 
 //Insere sem a parte do teclado e retorna o offset do registro adicionado
-int insert_no_keyboard(FILE* BIN, regHeader* head, regData inputReg){
+int insert_no_keyboard(FILE* BIN, regData inputReg){
     
     int return_value = -1;
-    
-    if(head->topo != -1){
-        return_value = 17 + head->topo * 80;
 
-        fseek(BIN, 17 + head->topo * 80, SEEK_SET);
+    regHeader tempHead;
+    regHeader_read(BIN, &tempHead);
+    
+    if(tempHead.topo != -1){
+        return_value = 17 + tempHead.topo * 80;
+
+        fseek(BIN,17 + tempHead.topo*80,SEEK_SET);
         regData curr_top;
         curr_top.nomeEstacao = NULL;
         curr_top.nomeLinha = NULL;
         regData_read(BIN, &curr_top);
         fseek(BIN, -80, SEEK_CUR);
         regData_write(BIN, &inputReg);
-        head->topo = curr_top.proxRemovido;
-        if(inputReg.codProxEstacao != -1) head->nParesEstacao = head->nParesEstacao + 1;
+        tempHead.topo = curr_top.proxRemovido;
 
-        return return_value;               
+        if (curr_top.nomeEstacao != NULL) free(curr_top.nomeEstacao);
+        if (curr_top.nomeLinha != NULL) free(curr_top.nomeLinha);
     }
     else{
-        return_value = 17 + head->proxRRN * 80;
-
-        fseek(BIN, 17 + (head->proxRRN) * 80, SEEK_SET);
+        return_value = 17 + tempHead.proxRRN * 80;
+        fseek(BIN,17 + tempHead.proxRRN*80,SEEK_SET);
         regData_write(BIN, &inputReg);
-        head->proxRRN = head->proxRRN + 1;
-        if(inputReg.codProxEstacao != -1) head->nParesEstacao = head->nParesEstacao + 1;
-        
-        return return_value;
+        tempHead.proxRRN = tempHead.proxRRN+1;
     }
+
+    if(inputReg.codProxEstacao != -1) tempHead.nParesEstacao = tempHead.nParesEstacao+1;
+    regHeader_write(BIN, &tempHead);
+    return return_value;
 }
 
 //cria um registro de criteiro, e imprime todos os registros que o satisfazerem

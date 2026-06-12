@@ -47,24 +47,22 @@ typedef struct {
 //                                                   funcionalidades do trabalho
 // ----------------------------------------------------------------------------------------------------------------------------------------
 
+    //cria o indice de arvore b e insere todos os registros não-apagados do databin nele
     void create_btree_index(FILE* BtreeBIN, FILE* dataBIN);
-
     
     //procurar e imprimir usando indice da arvore B
-    void search_in_btree(FILE* BtreeBIN, FILE* dataBIN, Btree_Header head);
+    void search_in_btree(FILE* BtreeBIN, FILE* dataBIN);
 
-    //Lê do teclado n registros e insere no arquivo de dados e na árvore-B
-    void insert_with_btree(FILE* BtreeBIN, FILE* dataBIN, regHeader* dataHeader, Btree_Header* BtreeHead, int nRegisters);
-    
-    void func9();
+    //insere um registro no arquivo de dados e na árvore-B
+    void insert_with_btree(FILE* BtreeBIN, FILE* dataBIN);
     
     void func10();
     
-    // ----------------------------------------------------------------------------------------------------------------------------------------
-    //                                            funções usadas nas implementações das funcionalidades
-    // ----------------------------------------------------------------------------------------------------------------------------------------
+// ----------------------------------------------------------------------------------------------------------------------------------------
+//                                            funções usadas nas implementações das funcionalidades
+// ----------------------------------------------------------------------------------------------------------------------------------------
     
-    //vai para o começo do arquivo de indice e o retorna
+    //vai para o começo do arquivo de indice, o le e o retorna
     Btree_Header Btree_ReadHeader(FILE* BtreeBIN);
     
     //vai para o começo do indice, e sobreescreve o header (a partir de um ponteiro pra header)
@@ -111,4 +109,5 @@ typedef struct {
             
     //Insere registro na arvore B
     void insert_btree(FILE* BtreeBIN, Btree_Header* head, int key, int offset);
+
  #endif
