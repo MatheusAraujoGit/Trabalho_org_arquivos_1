@@ -91,13 +91,14 @@ void insert_with_btree(FILE* BtreeBIN, FILE* dataBIN){
     
     regData tempData = createRegister();
 
-    searchstruct a = Btree_Search(BtreeBIN, tempData.codEstacao, BtreeHead.noRaiz);
-    if(!a.is_leaf && BtreeHead.noRaiz != -1){
-        if(tempData.nomeEstacao != NULL) free(tempData.nomeEstacao);
-        if(tempData.nomeLinha != NULL) free(tempData.nomeLinha);
-        return;
-    } //nao pode ter codestaçao duplicado. se achamos um match, abortar execução da funcionalidade
-
+    if(BtreeHead.noRaiz != -1){
+        searchstruct a = Btree_Search(BtreeBIN, tempData.codEstacao, BtreeHead.noRaiz);
+        if(!a.is_leaf){
+            if(tempData.nomeEstacao != NULL) free(tempData.nomeEstacao);
+            if(tempData.nomeLinha != NULL) free(tempData.nomeLinha);
+            return;
+        } //nao pode ter codestaçao duplicado. se achamos um match, abortar execução da funcionalidade
+    }
     int offset = insert_no_keyboard(dataBIN, tempData);
     insert_btree(BtreeBIN, &BtreeHead, tempData.codEstacao, offset); 
 
@@ -107,7 +108,6 @@ void insert_with_btree(FILE* BtreeBIN, FILE* dataBIN){
     
     //atualizar header
     Btree_WriteHeader(BtreeBIN, &BtreeHead);
-    regHeader_updateNEstacoes(dataBIN);
 }
 
 void func10(){}
@@ -502,6 +502,7 @@ void insert_btree(FILE* BtreeBIN, Btree_Header* head, int key, int offset){
             // Criar nova raiz
             int new_root_RRN;
             if(head->topo != -1){
+                //tentar reutilizar espaço
                 new_root_RRN = head->topo;
                 
                 //ler apenas o campo de proximo removido do nó

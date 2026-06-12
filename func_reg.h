@@ -114,7 +114,7 @@ typedef struct
     void regData_printData(regData registro);
 
     //recalcula o numero de estaçoes de um binario
-    void regHeader_updateNEstacoes(FILE* BIN);
+    void regHeader_updateNEstacoesEPares(FILE* BIN);
 
     //deleta um registro de dado em RRN (passar o RRN economiza fseeks)
     void regData_DeleteRegistry(FILE* BIN, regHeader* header, int RRN);

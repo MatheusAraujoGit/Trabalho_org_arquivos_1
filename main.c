@@ -139,7 +139,7 @@ int main()
             }
 
             //atualizar header, setar arquivo como consistente, fechar e imprimir
-            regHeader_updateNEstacoes(BIN);
+            regHeader_updateNEstacoesEPares(BIN);
             regHeader_setFileConsistent(BIN);
             fclose(BIN);
             BinarioNaTela(bin_name);
@@ -176,7 +176,7 @@ int main()
             }
 
             //atualizar header, setar arquivo como consistente, fechar e imprimir
-            regHeader_updateNEstacoes(BIN);
+            regHeader_updateNEstacoesEPares(BIN);
             regHeader_setFileConsistent(BIN);
             fclose(BIN);
             BinarioNaTela(bin_name);
@@ -213,7 +213,7 @@ int main()
             }
 
             //atualizar header, setar arquivo como consistente, fechar e imprimir
-            regHeader_updateNEstacoes(BIN);
+            regHeader_updateNEstacoesEPares(BIN);
             regHeader_setFileConsistent(BIN);
             fclose(BIN);
             BinarioNaTela(bin_name);
@@ -349,7 +349,8 @@ int main()
                 insert_with_btree(BTREE, BIN);
             }
 
-            //setar arquivos como consistentes
+            //setar arquivos como consistentes e atualizar header
+            regHeader_updateNEstacoesEPares(BIN);
             regHeader_setFileConsistent(BIN);
             Btree_setFileConsistent(BTREE);
 

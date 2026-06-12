@@ -38,3 +38,6 @@ zip: clean
 
 zip_windows: clean_windows
 	tar -a -cf trab.zip *.c *.h Makefile
+
+debug: all
+	gdb ./$(TARGET)

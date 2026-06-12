@@ -163,8 +163,7 @@ int insert_no_keyboard(FILE* BIN, regData inputReg){
         regData_write(BIN, &inputReg);
         tempHead.proxRRN = tempHead.proxRRN+1;
     }
-
-    if(inputReg.codProxEstacao != -1) tempHead.nParesEstacao = tempHead.nParesEstacao+1;
+    
     regHeader_write(BIN, &tempHead);
     return return_value;
 }
@@ -417,7 +416,7 @@ void regData_DeleteRegistry(FILE* BIN, regHeader* header, int RRN){
 }
 
 //recalcular o Nestaçoes de um binário e escrever no header
-void regHeader_updateNEstacoes(FILE* BIN){
+void regHeader_updateNEstacoesEPares(FILE* BIN){
     regHeader tempHead;
     regData tempData;
 
@@ -426,6 +425,7 @@ void regHeader_updateNEstacoes(FILE* BIN){
 
     regHeader_read(BIN, &tempHead);
     tempHead.nEstacoes = 0;
+    tempHead.nParesEstacao = 0;
 
     int capacity = 10;
     int* nomesUnicos = malloc(capacity*sizeof(int));
@@ -433,26 +433,29 @@ void regHeader_updateNEstacoes(FILE* BIN){
     while( (flag = regData_read(BIN, &tempData)) != -1){
         if (flag == 1){    //flag == 1 significa registro valido
         
-        // Verificar se ja existe com hash
-        int hash = fnv1a_hash(tempData.nomeEstacao);
-        char jaExiste = 0;
+            //Calcular NROPares
+            if(tempData.codProxEstacao != -1) tempHead.nParesEstacao++;
 
-        for(int i = 0; i< tempHead.nEstacoes; i++){
-            if (nomesUnicos[i] == hash){
-                jaExiste = 1;
-                break;
-            }
-        }
+            // Verificar se ja existe com hash
+            int hash = fnv1a_hash(tempData.nomeEstacao);
+            char jaExiste = 0;
 
-        // Se nao existe, aloco mais memoria pro array e conto uma estação a mais
-        if (jaExiste == 0){
-            if (tempHead.nEstacoes >= capacity) {
-            capacity *= 2;
-            nomesUnicos = realloc(nomesUnicos, capacity * sizeof(int));
+            for(int i = 0; i< tempHead.nEstacoes; i++){
+                if (nomesUnicos[i] == hash){
+                    jaExiste = 1;
+                    break;
+                }
             }
 
-            nomesUnicos[tempHead.nEstacoes] = hash;
-            tempHead.nEstacoes += 1;
+            // Se nao existe, aloco mais memoria pro array e conto uma estação a mais
+            if (jaExiste == 0){
+                if (tempHead.nEstacoes >= capacity) {
+                capacity *= 2;
+                nomesUnicos = realloc(nomesUnicos, capacity * sizeof(int));
+                }
+
+                nomesUnicos[tempHead.nEstacoes] = hash;
+                tempHead.nEstacoes += 1;
             }
         }
 
