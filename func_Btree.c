@@ -300,9 +300,9 @@ void write_into_incomplete_node(FILE* BtreeBIN, int RRN, int key, int offset, in
 }
     
 //faz o split de acordo com a especificação
-void split_node(FILE* BtreeBIN, Btree_Header* head, int full_RRN, 
-    int new_key, int new_offset, int new_right_child,
-    int* promo_key, int* promo_offset, int* promo_right_child){
+void split_node(FILE* BtreeBIN, Btree_Header* head, int full_RRN, //rrn do nó cheio
+    int new_key, int new_offset, int new_right_child,   // chave e filho direito do cara que não cabe no nó cheio
+    int* promo_key, int* promo_offset, int* promo_right_child){ //Essas são as coisas que vão subir por causa do split
         
         fseek(BtreeBIN, BTree_RRN2BYTE(full_RRN), SEEK_SET);
         Btree_Node full_node = Btree_ReadNode(BtreeBIN);
@@ -312,7 +312,7 @@ void split_node(FILE* BtreeBIN, Btree_Header* head, int full_RRN,
         typedef struct {
             int key;
             int offset;
-            int child_after; //child que vem depois essa chave
+            int child_after; //filho direito dessa chave
         } KeyEntry;
         
         KeyEntry entries[4];
@@ -415,9 +415,9 @@ void split_node(FILE* BtreeBIN, Btree_Header* head, int full_RRN,
         
 //Funcao auxiliar para insert_in_btree
 //1 = promotion, 0 = no promotion, -1 = chave duplicada
-int insert_recursion(FILE* BtreeBIN, Btree_Header* head, int curr_RRN, //coisas de arquivo
+int insert_recursion(FILE* BtreeBIN, Btree_Header* head, int curr_RRN, //coisas de arquivo e o rrn do nó em que eu estou
 int key, int offset,        //O que eu quero inserir
-int* promo_key, int* promo_offset, int* promo_right_child){ //Coisas de promoção
+int* promo_key, int* promo_offset, int* promo_right_child){ //Coisas de promoção (que vão subir na recursão)
     
     int pos = 0;
     Btree_Node node;
@@ -432,7 +432,7 @@ int* promo_key, int* promo_offset, int* promo_right_child){ //Coisas de promoç�
         pos = search_aux(key, node);
         if(pos == -2) return -1; //Chave duplicada
     }
-    else{ // Estou abaixo da arvore
+    else{ // Estou abaixo da arvore, vai ter promoção
         *promo_key = key;
         *promo_offset = offset;
         *promo_right_child = -1;
@@ -452,13 +452,13 @@ int* promo_key, int* promo_offset, int* promo_right_child){ //Coisas de promoç�
     
     else{
         //nó está cheio, precisa fazer split
-        split_node(BtreeBIN, head, curr_RRN, promo_key_below, promo_offset_below, promo_right_child_below, promo_key, promo_offset, promo_right_child);
+        split_node(BtreeBIN, head, curr_RRN, promo_key_below, promo_offset_below, promo_right_child_below, promo_key, promo_offset, promo_right_child); //o promo_key, promo_offset e promo_right_child vão virar os promo_below da chamada recursiva acima
         return 1; // promovo a chave do meio com o filho direito (novo nó)
     }
     
 }
 
-//Insere registro na arvore B. Feita com base no livro da disciplina
+//Insere registro na arvore B
 void insert_btree(FILE* BtreeBIN, Btree_Header* head, int key, int offset){
     if(head->noRaiz == -1){
         // árvore vazia -> criar raiz inicial
@@ -496,7 +496,7 @@ void insert_btree(FILE* BtreeBIN, Btree_Header* head, int key, int offset){
                                         &promo_key, &promo_offset, &promo_right_child);
         
         // Se houve split da raiz, criar nova raiz
-        if(result == 1 && promo_key != -1){
+        if(result == 1){
             int old_root_RRN = head->noRaiz;
             
             // Criar nova raiz
@@ -542,4 +542,178 @@ void insert_btree(FILE* BtreeBIN, Btree_Header* head, int key, int offset){
             head->noRaiz = new_root_RRN;
         }
     }
+}
+
+//Utilidade para remocao de chave em nó intermediario
+//retorna o rrn do nó no qual a chave que eu quero deletar foi parar
+//retorna -1 caso eu não consiga achar sucessor
+//NOTA: Na especificacao eles só falam de trocar pelo sucessor, não sei se é para fazer o predecessor tambem
+int swap_for_immediate_successor(FILE* BtreeBIN, int key, int keyNodeRRN){
+    Btree_Node intermediate;
+    Btree_Node leaf;
+    int* offsetAddress = NULL;
+    int* keyAddress = NULL; // vou usar esses ponteiros para alterar a chave no intermediate
+
+    fseek(BtreeBIN, BTree_RRN2BYTE(keyNodeRRN), SEEK_SET);
+    intermediate = Btree_ReadNode(BtreeBIN);
+
+    //Ver onde esta minha chave e por qual caminho seguir
+    int pointerRRN = -1;
+    if(key == intermediate.C1){
+        pointerRRN = intermediate.P2;
+        keyAddress = &intermediate.C1;
+        offsetAddress = &intermediate.PR1;
+    }
+    else if(key == intermediate.C2){ 
+        pointerRRN = intermediate.P3;
+        keyAddress = &intermediate.C2;
+        offsetAddress = &intermediate.PR2;
+    }
+    else if(key == intermediate.C3){
+        pointerRRN = intermediate.P4;
+        keyAddress = &intermediate.C3;
+        offsetAddress = &intermediate.PR3;
+    }
+
+    //vou descer na arvore até o nó que tem o sucessor imediato
+    if(pointerRRN != -1){
+        //primeiro passo
+        fseek(BtreeBIN, BTree_RRN2BYTE(pointerRRN), SEEK_SET);
+        leaf = Btree_ReadNode(BtreeBIN);
+
+        //loop
+        while(leaf.P1 != -1){
+            pointerRRN = leaf.P1;
+            fseek(BtreeBIN, BTree_RRN2BYTE(leaf.P1), SEEK_SET);
+            leaf = Btree_ReadNode(BtreeBIN);
+        }
+
+        //Troca
+        int tempKey = leaf.C1;
+        int tempOffset = leaf.PR1;
+        leaf.C1 = key;
+        leaf.PR1 = *offsetAddress;
+        *keyAddress = tempKey;
+        *offsetAddress = tempOffset;
+
+        //Escrita dos nós no disco
+        //Atualizo o nó folha
+        fseek(BtreeBIN, BTree_RRN2BYTE(pointerRRN), SEEK_SET);
+        Btree_WriteNode(BtreeBIN, &leaf);
+
+        //Agora vou atualizar o intermediario
+        fseek(BtreeBIN, BTree_RRN2BYTE(keyNodeRRN), SEEK_SET);
+        Btree_WriteNode(BtreeBIN, &intermediate);
+
+    }
+
+    return pointerRRN;
+
+}
+
+//Redistribuiçao direita
+//Não mexe com o arquivo, apenas com nós para modularizar o código
+//Vou usar o fato de que eu sei que o nó com underflow tem 0 chaves
+void node_right_redistribution(int underflowNodeRRN, Btree_Node* underflowNode,  Btree_Node* father, Btree_Node* rightNode){
+    int* fatherKeyAddress = NULL;
+    int* fatherOffsetAddress = NULL;
+
+    //Vou pegar qual chave vai mudar de lugar no nó pai
+    if(underflowNodeRRN == father->P3){
+        fatherKeyAddress = &father->C3;
+        fatherOffsetAddress = &father->PR3;
+    }
+    else if(underflowNodeRRN == father->P2){
+        fatherKeyAddress = &father->C2;
+        fatherOffsetAddress = &father->PR2;
+    }
+    else if(underflowNodeRRN == father->P1){
+        fatherKeyAddress = &father->C1;
+        fatherOffsetAddress = &father->PR1;
+    }
+
+    //Nó com underflow
+    underflowNode->C1 = *fatherKeyAddress;
+    underflowNode->PR1 = *fatherOffsetAddress;
+    underflowNode->P2 = rightNode->P1;
+    underflowNode->nroChaves++;
+
+    //Nó pai
+    *fatherKeyAddress = rightNode->C1;
+    *fatherOffsetAddress = rightNode->PR1;
+
+    //Nó da direita
+    rightNode->P1 = rightNode->P2;
+    rightNode->C1 = rightNode->C2;
+    rightNode->PR1 = rightNode->PR2;
+    rightNode->P2 = rightNode->P3;
+    rightNode->C2 = rightNode->C3;
+    rightNode->PR2 = rightNode->PR3;
+    rightNode->P3 = rightNode->P4;
+    rightNode->C3 = -1;
+    rightNode->PR3 = -1;
+    rightNode->P4 = -1;
+    rightNode->nroChaves--;
+
+}
+
+//Redistribuiçao esquerda
+//Não mexe com o arquivo, apenas com nós para modularizar o código
+//Vou usar o fato de que eu sei que o nó com underflow tem 0 chaves
+void node_left_redistribution(int underflowNodeRRN, Btree_Node* underflowNode, Btree_Node* father, Btree_Node* leftNode){
+    int* fatherKeyAddress = NULL;
+    int* fatherOffsetAddress = NULL;
+
+    int* leftKeyAddress = NULL;
+    int* leftOffsetAddress = NULL;
+    int* leftChildAddress = NULL;
+
+    //Vou pegar qual chave vai mudar de lugar no nó pai
+    if(underflowNodeRRN == father->P4){
+        fatherKeyAddress = &father->C3;
+        fatherOffsetAddress = &father->PR3;
+    }
+    else if(underflowNodeRRN == father->P3){
+        fatherKeyAddress = &father->C2;
+        fatherOffsetAddress = &father->PR2;
+    }
+    else if(underflowNodeRRN == father->P2){
+        fatherKeyAddress = &father->C1;
+        fatherOffsetAddress = &father->PR1;
+    }
+
+    //Pegar qual chave e filho vou pegar do irmao esquerdo
+    if(leftNode->nroChaves == 3){
+        leftKeyAddress = &leftNode->C3;
+        leftOffsetAddress = &leftNode->PR3;
+        leftChildAddress = &leftNode->P4;
+    }
+    else if(leftNode->nroChaves == 2){
+        leftKeyAddress = &leftNode->C2;
+        leftOffsetAddress = &leftNode->PR2;
+        leftChildAddress = &leftNode->P3;
+    }
+    else if(leftNode->nroChaves == 1){
+        leftKeyAddress = &leftNode->C1;
+        leftOffsetAddress = &leftNode->PR1;
+        leftChildAddress = &leftNode->P2;
+    }
+
+    //Nó com underflow
+    underflowNode->P2 = underflowNode->P1;
+    underflowNode->C1 = *fatherKeyAddress;
+    underflowNode->PR1 = *fatherOffsetAddress;
+    underflowNode->P1 = *leftChildAddress;
+    underflowNode->nroChaves++;
+
+    //Nó pai
+    *fatherKeyAddress = *leftKeyAddress;
+    *fatherOffsetAddress = *leftOffsetAddress;
+
+    //Nó da esquerda
+    *leftKeyAddress = -1;
+    *leftOffsetAddress = -1;
+    *leftChildAddress = -1;
+    leftNode->nroChaves--;
+
 }
