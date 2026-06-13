@@ -184,12 +184,15 @@ void delete_with_btree(FILE* BtreeBIN, FILE* dataBIN){
     }
 
     //cabou. agr ir mexer com o arquivo de indice -----------------------------------
-    //todo!
 
-    //liberar memoria 
+    if(!result.is_leaf){}
+    if(result.is_leaf){}
+
+    // liberar memoria
     if (criteria.nomeEstacao != NULL) free(criteria.nomeEstacao);
     if (criteria.nomeLinha != NULL) free(criteria.nomeLinha);
 }
+
     
 // ----------------------------------------------------------------------------------------------------------------------------------------
 //                                            funções usadas nas implementações das funcionalidades
@@ -307,7 +310,7 @@ int search_aux(int key, Btree_Node node, int* pos_in_node){
 }
 
 //pesquisa uma chave na arvore b;
-//retorna RRN do arquivo de dados ou RRN da folha vazia de onde a pesquisa cair
+//retorna byteo ffset do arquivo de dados ou byte offset da arvore binaria de onde a pesquisa cair
 searchstruct Btree_Search(FILE* BtreeBIN, int key, int RRN){
     fseek(BtreeBIN, BTree_RRN2BYTE(RRN), SEEK_SET);
     Btree_Node node = Btree_ReadNode(BtreeBIN);
@@ -319,25 +322,24 @@ searchstruct Btree_Search(FILE* BtreeBIN, int key, int RRN){
 
     //se deu match
     if(next == -2){
-        
+        if(node.P1 == -1 && node.P2 == -1 && node.P3 == -1 && node.P4 == -1) result.is_leaf = true;
+        else result.is_leaf = false;
+
         if(key == node.C1) result.pointer = node.PR1;
         else if(key == node.C2) result.pointer = node.PR2;
         else if(key == node.C3) result.pointer = node.PR3;
 
         result.found = true;
 
-        return result;
     }
     //se nao deu match
     if(next == -1){
-        
+        result.is_leaf = true;
         result.pointer = RRN;
-
         result.found = false;
-
-        return result;
     }
-    
+
+    return result;
     //recursão
     return Btree_Search(BtreeBIN, key, next);
     
@@ -946,4 +948,9 @@ void node_right_merge(int underflowNodeRRN, Btree_Node* underflowNode,  Btree_No
     father->PR3 = -1;
     father->P4 = -1;
     father->nroChaves--;
+}
+
+//função recursiva pra deleção. retorna se houve underflow
+void Btree_Delete_Recursive(){
+
 }

@@ -93,8 +93,7 @@ typedef struct {
     int search_aux(int key, Btree_Node node, int* pos_in_node);
     
     //pesquisa uma chave na arvore b;
-    //retorna RRN do arquivo de dados ou RRN da folha vazia de onde a pesquisa cair
-    //a struct tem um bool pra dizer qual tipo achou
+    //retorna byte offset do arquivo de dados ou byte offset do arquivo de indice do que achou
     searchstruct Btree_Search(FILE* BtreeBIN, int key, int RRN);
     
     //Insere ordernado em um nó que não está cheio e escreve em disco
@@ -135,5 +134,8 @@ typedef struct {
 
     //Concatenacao direita, só tem a lógica de concatenacao entre nós, não mexe no disco
     void node_right_merge(int underflowNodeRRN, Btree_Node* underflowNode,  Btree_Node* father, Btree_Node* rightNode);
+
+    //função recursiva pra deleção. retorna se houve underflow
+    void Btree_Delete_Recursive();
 
  #endif
