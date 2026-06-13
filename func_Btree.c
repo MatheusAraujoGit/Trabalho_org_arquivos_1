@@ -666,7 +666,7 @@ void node_left_redistribution(int underflowNodeRRN, Btree_Node* underflowNode, B
 
     int* leftKeyAddress = NULL;
     int* leftOffsetAddress = NULL;
-    int* leftChildAddress = NULL;
+    int* leftChildAddress = NULL; //Isso é o filho direito da chave, não confundir pensando que é o filho esquerdo do nó
 
     //Vou pegar qual chave vai mudar de lugar no nó pai
     if(underflowNodeRRN == father->P4){
@@ -716,4 +716,130 @@ void node_left_redistribution(int underflowNodeRRN, Btree_Node* underflowNode, B
     *leftChildAddress = -1;
     leftNode->nroChaves--;
 
+}
+
+//Concatenacao esquerda, só tem a lógica de concatenacao entre nós, não mexe no disco
+void node_left_merge(int underflowNodeRRN, Btree_Node* underflowNode, Btree_Node* father, Btree_Node* leftNode){
+    int* fatherKeyAddress = NULL;
+    int* fatherOffsetAddress = NULL;
+
+    int* leftKeyAddress = NULL;
+    int* leftOffsetAddress = NULL;
+    int* leftChildAddress = NULL;
+
+    //Vou pegar qual chave vai mudar de lugar no nó pai
+    if(underflowNodeRRN == father->P4){
+        fatherKeyAddress = &father->C3;
+        fatherOffsetAddress = &father->PR3;
+    }
+    else if(underflowNodeRRN == father->P3){
+        fatherKeyAddress = &father->C2;
+        fatherOffsetAddress = &father->PR2;
+    }
+    else if(underflowNodeRRN == father->P2){
+        fatherKeyAddress = &father->C1;
+        fatherOffsetAddress = &father->PR1;
+    }
+
+    //Pegar onde vou adicionar a chave do pai no filho esquerdo
+    if(leftNode->nroChaves == 2){
+        leftKeyAddress = &leftNode->C3;
+        leftOffsetAddress = &leftNode->PR3;
+        leftChildAddress = &leftNode->P4;
+    }
+    else if(leftNode->nroChaves == 1){
+        leftKeyAddress = &leftNode->C2;
+        leftOffsetAddress = &leftNode->PR2;
+        leftChildAddress = &leftNode->P3;
+    }
+
+    //Nó da esquerda
+    *leftKeyAddress = *fatherKeyAddress;
+    *leftOffsetAddress = *fatherOffsetAddress;
+    *leftChildAddress = underflowNode->P1;
+    leftNode->nroChaves++;
+
+    //Nó com underflow
+    //Não vou mexer com disco aqui, ele precisa ser escrito como removido externamente dessa função
+    //e precisa atualizar a pilha de removidos externamente tbm
+    underflowNode->removido = '1';
+
+    //Nó pai
+    //Vou precisar dar shift para tras nele
+    if(fatherKeyAddress == &father->C1){ //significa que tirei o C1 do pai
+        father->C1 = father->C2;
+        father->PR1 = father->PR2;
+        father->P2 = father->P3;
+
+        father->C2 = father->C3;
+        father->PR2 = father->PR3;
+        father->P3 = father->P4;
+    }
+    else if(fatherKeyAddress == &father->C2){ //tirei o C2 do pai
+        father->C2 = father->C3;
+        father->PR2 = father->PR3;
+        father->P3 = father->P4;
+    }
+    //C3 toma shift em todos os casos
+    father->C3 = -1;
+    father->PR3 = -1;
+    father->P4 = -1;
+    father->nroChaves--;
+
+}
+
+//Concatenacao direita, só tem a lógica de concatenacao entre nós, não mexe no disco
+void node_right_merge(int underflowNodeRRN, Btree_Node* underflowNode,  Btree_Node* father, Btree_Node* rightNode){
+    int* fatherKeyAddress = NULL;
+    int* fatherOffsetAddress = NULL;
+
+    //Vou pegar qual chave vai mudar de lugar no nó pai
+    if(underflowNodeRRN == father->P3){
+        fatherKeyAddress = &father->C3;
+        fatherOffsetAddress = &father->PR3;
+    }
+    else if(underflowNodeRRN == father->P2){
+        fatherKeyAddress = &father->C2;
+        fatherOffsetAddress = &father->PR2;
+    }
+    else if(underflowNodeRRN == father->P1){
+        fatherKeyAddress = &father->C1;
+        fatherOffsetAddress = &father->PR1;
+    }
+
+    //Nó da direita
+    rightNode->removido = '1';
+
+    //Nó com underflow
+    //Sempre coloco as chaves no nó mais a esquerda, nesse caso é o nó de underflow
+    underflowNode->C1 = *fatherKeyAddress;
+    underflowNode->PR1 = *fatherOffsetAddress;
+    underflowNode->P2 = rightNode->P1;
+    //Para o merge acontecer, o nó vizinho só vai ter uma chave, então só vou me preocupar com ela
+    underflowNode->C2 = rightNode->C1;
+    underflowNode->PR2 = rightNode->PR1;
+    underflowNode->P3 = rightNode->P2;
+    underflowNode->nroChaves += 2;
+
+    //Nó pai
+    //Vou precisar dar shift para tras nele
+    if(fatherKeyAddress == &father->C1){ //significa que tirei o C1 do pai
+        father->C1 = father->C2;
+        father->PR1 = father->PR2;
+        father->P2 = father->P3;
+
+        father->C2 = father->C3;
+        father->PR2 = father->PR3;
+        father->P3 = father->P4;
+    }
+    else if(fatherKeyAddress == &father->C2){ //tirei o C2 do pai
+        father->C2 = father->C3;
+        father->PR2 = father->PR3;
+        father->P3 = father->P4;
+    }
+    //C3 toma shift em todos os casos
+    father->C3 = -1;
+    father->PR3 = -1;
+    father->P4 = -1;
+    father->nroChaves--;
 }
