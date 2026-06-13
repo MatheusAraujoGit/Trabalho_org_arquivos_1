@@ -63,6 +63,9 @@ typedef struct
     //cria um registro de criterio, e deleta todos os registros de dados que o satisfazer
     void delete(FILE* BIN);
 
+    //faz a funçao de deletar mas com um regCriteria passado como parametro
+    void delete_no_keyboard(FILE* BIN, regCriteria criteria);
+
     //insere um registro de dados, aproveitando memoria se possivel
     void insert(FILE* BIN);
 
@@ -76,7 +79,7 @@ typedef struct
     //cria um registro de criteiro, e imprime todos os registros que o satisfazerem
     void search(FILE* BIN);
 
-    //faz a função de search mas com um regCriteria passado pela função
+    //faz a função de search mas com um regCriteria passado como parametro
     void search_no_keyboard(FILE*BIN, regCriteria criteria);
 
 // ----------------------------------------------------------------------------------------------------------------------------------------

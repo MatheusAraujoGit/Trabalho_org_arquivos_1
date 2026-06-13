@@ -63,11 +63,11 @@ void search_in_btree(FILE* BtreeBIN, FILE* dataBIN){
         return;
     }
 
-    //se tem codEstaçao na pesquisa; ou nao acho ninguem (folha vazia), ou acho 1 so
+    //se tem codEstaçao na pesquisa; ou nao acho ninguem, ou acho 1 so
     searchstruct result = Btree_Search(BtreeBIN, criteria.codEstacao, head.noRaiz);
 
     //se acho 1: o imprimir
-    if(!result.is_leaf){
+    if(result.found){
         fseek(dataBIN, result.pointer, SEEK_SET);
         regData found;
 
@@ -85,7 +85,7 @@ void search_in_btree(FILE* BtreeBIN, FILE* dataBIN){
     }
 
     //se acho ninguem: falar isso
-    if(result.is_leaf) printf("Registro inexistente.\n");
+    if(!result.found) printf("Registro inexistente.\n");
     printf("\n");
 
     //liberar memoria 
@@ -103,15 +103,15 @@ void insert_with_btree(FILE* BtreeBIN, FILE* dataBIN){
 
     if(BtreeHead.noRaiz != -1){
         searchstruct a = Btree_Search(BtreeBIN, tempData.codEstacao, BtreeHead.noRaiz);
-        if(!a.is_leaf){
+        if(a.found){
             if(tempData.nomeEstacao != NULL) free(tempData.nomeEstacao);
             if(tempData.nomeLinha != NULL) free(tempData.nomeLinha);
             return;
         } //nao pode ter codestaçao duplicado. se achamos um match, abortar execução da funcionalidade
     }
+
     int offset = insert_no_keyboard(dataBIN, tempData);
     insert_btree(BtreeBIN, &BtreeHead, tempData.codEstacao, offset); 
-
 
     if(tempData.nomeEstacao != NULL) free(tempData.nomeEstacao);
     if(tempData.nomeLinha != NULL) free(tempData.nomeLinha);
@@ -120,7 +120,76 @@ void insert_with_btree(FILE* BtreeBIN, FILE* dataBIN){
     Btree_WriteHeader(BtreeBIN, &BtreeHead);
 }
 
-void func10(){}
+//deleta um registro no arquivo de dados e na árvore-B
+void delete_with_btree(FILE* BtreeBIN, FILE* dataBIN){
+    regCriteria criteria;
+    regHeader datahead;
+    Btree_Header treehead;
+
+    regHeader_read(dataBIN, &datahead);
+    treehead = Btree_ReadHeader(BtreeBIN);
+    criteria = createCriteriaRegister();
+
+    //primeiro: se a arvore está vazia, abortar pq n vou fazer nada
+    if(treehead.noRaiz == -1){
+        if (criteria.nomeEstacao != NULL) free(criteria.nomeEstacao);
+        if (criteria.nomeLinha != NULL) free(criteria.nomeLinha);
+        return;
+    }
+
+    //primeira parte, mexer com o arquivo de dados ------------------------------
+
+    //se nao tiver codEstaçao na pesquisa, fallback pra funcionalidade 4
+    if(criteria.codEstacao == -2){
+        delete_no_keyboard(dataBIN, criteria);
+        return;
+    }
+
+    //se tiver, procurar ele com btree; ou acho ninguem ou acho 1 so
+    searchstruct result = Btree_Search(BtreeBIN, criteria.codEstacao, treehead.noRaiz);
+
+    //se acho ninguem: abortar pq ja sei que n vou mexer em nada
+    if(!result.found){
+        if (criteria.nomeEstacao != NULL) free(criteria.nomeEstacao);
+        if (criteria.nomeLinha != NULL) free(criteria.nomeLinha);
+        return;
+    }
+
+    //se acho 1: o deletar
+    if(result.found){
+        fseek(dataBIN, result.pointer, SEEK_SET);
+        regData found;
+
+        found.nomeEstacao = NULL;
+        found.nomeLinha = NULL;
+
+        regData_read(dataBIN, &found);
+
+        //double check pra ver se dá match mesmo. se nao da, abortar
+        if(!do_they_match(criteria, found)){
+            if (found.nomeEstacao != NULL) free(found.nomeEstacao);
+            if (found.nomeLinha != NULL) free(found.nomeLinha);
+            if (criteria.nomeEstacao != NULL) free(criteria.nomeEstacao);
+            if (criteria.nomeLinha != NULL) free(criteria.nomeLinha);
+            return;
+        }
+
+        //agr podemos deletar, que nem a func4 mas agr ja sabemos o rrn
+        regData_DeleteRegistry(dataBIN, &datahead, Data_BYTE2RRN(result.pointer));
+
+        //atualizar header de dados
+        regHeader_write(dataBIN, &datahead);
+        if (found.nomeEstacao != NULL) free(found.nomeEstacao);
+        if (found.nomeLinha != NULL) free(found.nomeLinha);
+    }
+
+    //cabou. agr ir mexer com o arquivo de indice -----------------------------------
+    //todo!
+
+    //liberar memoria 
+    if (criteria.nomeEstacao != NULL) free(criteria.nomeEstacao);
+    if (criteria.nomeLinha != NULL) free(criteria.nomeLinha);
+}
     
 // ----------------------------------------------------------------------------------------------------------------------------------------
 //                                            funções usadas nas implementações das funcionalidades
@@ -205,14 +274,33 @@ void Btree_setFileInconsistent(FILE* BtreeBIN){
 }
 
 //aux pra pesquisa - volta pra qual ponteiro ir na pesquisa;
-int search_aux(int key, Btree_Node node){
-    if(node.C1 == key || node.C2 == key || node.C3 == key) return -2;
+int search_aux(int key, Btree_Node node, int* pos_in_node){
+    if(node.C1 == key){
+        *pos_in_node = 1;
+        return -2;
+    }
+
+    if(node.C2 == key){
+        *pos_in_node = 2;
+        return -2;
+    }
+
+    if(node.C3 == key){
+        *pos_in_node = 3;
+        return -2;
+    }
     
-    if(key < node.C1) return node.P1;
+    if(key < node.C1){
+        return node.P1;
+    }
     
-    if(key < node.C2 || node.C2 == -1) return node.P2;
+    if(key < node.C2 || node.C2 == -1){
+        return node.P2;
+    }
     
-    if(key < node.C3 || node.C3 == -1) return node.P3;
+    if(key < node.C3 || node.C3 == -1){
+        return node.P3;
+    }
     
     return node.P4;
     
@@ -224,24 +312,29 @@ searchstruct Btree_Search(FILE* BtreeBIN, int key, int RRN){
     fseek(BtreeBIN, BTree_RRN2BYTE(RRN), SEEK_SET);
     Btree_Node node = Btree_ReadNode(BtreeBIN);
     
-    int next = search_aux(key, node);
-    
+    searchstruct result;
+    int pos;
+    int next = search_aux(key, node, &pos);
+    result.pos_in_node = pos;
+
     //se deu match
     if(next == -2){
-        searchstruct result;
-        result.is_leaf = false;
         
         if(key == node.C1) result.pointer = node.PR1;
         else if(key == node.C2) result.pointer = node.PR2;
         else if(key == node.C3) result.pointer = node.PR3;
+
+        result.found = true;
+
         return result;
     }
-    //se encontrou uma folha vazia
+    //se nao deu match
     if(next == -1){
-        searchstruct result;
-        result.is_leaf = true;
         
         result.pointer = RRN;
+
+        result.found = false;
+
         return result;
     }
     
@@ -439,7 +532,8 @@ int* promo_key, int* promo_offset, int* promo_right_child){ //Coisas de promoç�
         fseek(BtreeBIN, BTree_RRN2BYTE(curr_RRN), SEEK_SET);
         node = Btree_ReadNode(BtreeBIN);
         
-        pos = search_aux(key, node);
+        int a; // **verificar isso!!!**
+        pos = search_aux(key, node, &a);
         if(pos == -2) return -1; //Chave duplicada
     }
     else{ // Estou abaixo da arvore, vai ter promoção

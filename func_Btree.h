@@ -36,11 +36,14 @@ typedef struct {
 } Btree_Node;
 
 //struct pra retorno da pesquisa
-//preciso disso pra saber se o que voltou de uma pesquisa é um ponteiro de dados ou um no folha
+//preciso disso pra saber se o que voltou de uma pesquisa é um ponteiro de dados ou um no em arvore b
+//e tambem pra saber se encontrou ou nao
 
 typedef struct {
     bool is_leaf;
+    bool found;
     int pointer;
+    int pos_in_node;
 } searchstruct;
 
 // ----------------------------------------------------------------------------------------------------------------------------------------
@@ -56,7 +59,8 @@ typedef struct {
     //insere um registro no arquivo de dados e na árvore-B
     void insert_with_btree(FILE* BtreeBIN, FILE* dataBIN);
     
-    void func10();
+    //deleta um registro no arquivo de dados e na árvore-B
+    void delete_with_btree(FILE* BtreeBIN, FILE* dataBIN);
     
 // ----------------------------------------------------------------------------------------------------------------------------------------
 //                                            funções usadas nas implementações das funcionalidades
@@ -86,7 +90,7 @@ typedef struct {
     //chave está entre c1 e c2 -> retorna ponteiro 2
     //chave está entre c2 e c3 -> retorna ponteiro 3
     //chave está depois de c3 -> retorna ponteiro 4
-    int search_aux(int key, Btree_Node node);
+    int search_aux(int key, Btree_Node node, int* pos_in_node);
     
     //pesquisa uma chave na arvore b;
     //retorna RRN do arquivo de dados ou RRN da folha vazia de onde a pesquisa cair

@@ -98,6 +98,45 @@ void delete(FILE* BIN){
     return;
 }
 
+//faz a funçao de deletar mas com um regCriteria passado como parametro
+void delete_no_keyboard(FILE* BIN, regCriteria criteria){
+    regData tempData;
+    regHeader header;
+
+    tempData.nomeEstacao = NULL;
+    tempData.nomeLinha = NULL;
+
+    regHeader_read(BIN, &header);
+
+    int RRN = -1;
+    while(regData_read(BIN, &tempData) != -1){
+        RRN++;
+        if(tempData.removido == '1') continue;
+        if(do_they_match(criteria,tempData)){
+            regData_DeleteRegistry(BIN, &header, RRN);
+
+            //codEstacao só existe um, então ja posso parar
+            if(criteria.codEstacao != -2){
+                break;
+            }
+        }
+    }
+
+    if (tempData.nomeEstacao != NULL)
+        free(tempData.nomeEstacao);
+    if (tempData.nomeLinha != NULL)
+        free(tempData.nomeLinha);
+    if (criteria.nomeEstacao != NULL)
+        free(criteria.nomeEstacao);
+    if (criteria.nomeLinha != NULL)
+        free(criteria.nomeLinha);
+
+    //escrever header atualizado
+    regHeader_write(BIN, &header);
+    
+    return;
+}
+
 //insere um registro de dados, reutilzando espaço de dados removidos se possivel
 //se não, o coloca no fim do arquivo
 void insert(FILE* BIN){

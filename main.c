@@ -403,9 +403,9 @@ int main()
             scanf("%d ", &n);
 
             //executar funcionalidade n vezes
-            //for(int i = 0; i<n; i++){
-            //    delete_in_btree(BTREE, BIN);
-            //}
+            for(int i = 0; i<n; i++){
+                delete_with_btree(BTREE, BIN);
+            }
 
             //setar arquivos como consistentes e atualizar header
             regHeader_updateNEstacoesEPares(BIN);
