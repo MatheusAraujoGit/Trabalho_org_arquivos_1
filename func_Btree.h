@@ -110,4 +110,26 @@ typedef struct {
     //Insere registro na arvore B
     void insert_btree(FILE* BtreeBIN, Btree_Header* head, int key, int offset);
 
+    //Utilidade para remocao de chave em nó intermediario
+    //retorna o rrn do nó no qual a chave que eu quero deletar foi parar
+    //retorna -1 caso eu não consiga achar sucessor
+    //NOTA: Na especificacao eles só falam de trocar pelo sucessor, não sei se é para fazer o predecessor tambem
+    int swap_for_immediate_successor(FILE* BtreeBIN, int key, int keyNodeRRN);
+
+    //Redistribuiçao direita
+    //Não mexe com o arquivo, apenas com nós para modularizar o código
+    //Vou usar o fato de que eu sei que o nó com underflow tem 0 chaves
+    void node_right_redistribution(int underflowNodeRRN, Btree_Node* underflowNode,  Btree_Node* father, Btree_Node* rightNode);
+
+    //Redistribuiçao esquerda
+    //Não mexe com o arquivo, apenas com nós para modularizar o código
+    //Vou usar o fato de que eu sei que o nó com underflow tem 0 chaves
+    void node_left_redistribution(int underflowNodeRRN, Btree_Node* underflowNode, Btree_Node* father, Btree_Node* leftNode);
+
+    //Concatenacao esquerda, só tem a lógica de concatenacao entre nós, não mexe no disco
+    void node_left_merge(int underflowNodeRRN, Btree_Node* underflowNode, Btree_Node* father, Btree_Node* leftNode);
+
+    //Concatenacao direita, só tem a lógica de concatenacao entre nós, não mexe no disco
+    void node_right_merge(int underflowNodeRRN, Btree_Node* underflowNode,  Btree_Node* father, Btree_Node* rightNode);
+
  #endif

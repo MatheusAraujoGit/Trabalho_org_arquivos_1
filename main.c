@@ -365,7 +365,59 @@ int main()
 
         //--------
         case 10:
-            printf("funcionalidade %d ainda nao implementada!", option);
+            //ler nome dos arquivos
+            scanf("%s", bin_name);
+            scanf("%s", btree_name);
+
+            //tentar abrir arquivos + errorcheck
+            BIN = fopen(bin_name, "rb+");
+            if (BIN == NULL){
+                error_flag = true;
+                break;
+            }
+            regHeader_read(BIN, &header);
+            if(header.status == '0'){
+                error_flag = true;
+                fclose(BIN);
+                break;
+            }
+            BTREE = fopen(btree_name, "rb+");
+            if (BTREE == NULL){
+                error_flag = true;
+                fclose(BIN);
+                break;
+            }
+            Btreehead = Btree_ReadHeader(BTREE);
+            if(Btreehead.status == '0'){
+                error_flag = true;
+                fclose(BIN);
+                fclose(BTREE);
+                break;
+            }
+
+            //setar arquivos como inconsistentes
+            regHeader_setFileInconsistent(BIN);
+            Btree_setFileInconsistent(BTREE);
+    
+            //ler n
+            scanf("%d ", &n);
+
+            //executar funcionalidade n vezes
+            //for(int i = 0; i<n; i++){
+            //    delete_in_btree(BTREE, BIN);
+            //}
+
+            //setar arquivos como consistentes e atualizar header
+            regHeader_updateNEstacoesEPares(BIN);
+            regHeader_setFileConsistent(BIN);
+            Btree_setFileConsistent(BTREE);
+
+            //fechar e imprimir
+            fclose(BIN);
+            fclose(BTREE);
+
+            BinarioNaTela(bin_name);
+            BinarioNaTela(btree_name);
         break;
 
     default:

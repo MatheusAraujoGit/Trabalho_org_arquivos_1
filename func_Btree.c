@@ -19,24 +19,23 @@ void create_btree_index(FILE* BtreeBIN, FILE* dataBIN){
     temp_reg.nomeLinha = NULL;
 
     int status_leitura;
+
     int current_pos = 17;
+
     while((status_leitura = regData_read(dataBIN, &temp_reg)) != -1){
         current_pos += 80;
 
         // Se o registro for válido, inserir. Se não, ignorar
-        if(status_leitura == 1){ 
-            insert_btree(BtreeBIN, &new_head, temp_reg.codEstacao, current_pos-80);
-            
-            //pesadelos pq decidimos que nossas strings sao dinamicas
-            if(temp_reg.nomeEstacao != NULL){
-                free(temp_reg.nomeEstacao);
-                temp_reg.nomeEstacao = NULL;
-            }
-                if(temp_reg.nomeLinha != NULL){
-                    free(temp_reg.nomeLinha);
-                    temp_reg.nomeLinha = NULL;
-            }
-        }
+        if(status_leitura == 1)insert_btree(BtreeBIN, &new_head, temp_reg.codEstacao, current_pos-80);
+    }
+
+    if(temp_reg.nomeEstacao != NULL){
+        free(temp_reg.nomeEstacao);
+        temp_reg.nomeEstacao = NULL;
+    }
+    if(temp_reg.nomeLinha != NULL){
+        free(temp_reg.nomeLinha);
+        temp_reg.nomeLinha = NULL;
     }
 
     Btree_WriteHeader(BtreeBIN, &new_head);
@@ -49,6 +48,14 @@ void search_in_btree(FILE* BtreeBIN, FILE* dataBIN){
     regCriteria criteria;        
     criteria = createCriteriaRegister();
 
+    //se a arvore está vazia, nao fazer nada e já dizer que n encontrei
+    if(head.noRaiz == -1){
+        printf("Registro inexistente.\n");
+
+        if (criteria.nomeEstacao != NULL) free(criteria.nomeEstacao);
+        if (criteria.nomeLinha != NULL) free(criteria.nomeLinha);
+        return;
+    }
 
     //se nao tiver codEstaçao na pesquisa, fallback pra funcionalidade 3
     if(criteria.codEstacao == -2){
@@ -68,10 +75,13 @@ void search_in_btree(FILE* BtreeBIN, FILE* dataBIN){
         found.nomeLinha = NULL;
 
         regData_read(dataBIN, &found);
-        regData_printData(found);
 
-        if (found.nomeEstacao != NULL) free(criteria.nomeEstacao);
-        if (found.nomeLinha != NULL) free(criteria.nomeLinha);
+        //double check pra ver se dá match mesmo
+        if(do_they_match(criteria, found)) regData_printData(found);
+        else printf("Registro inexistente.\n");
+
+        if (found.nomeEstacao != NULL) free(found.nomeEstacao);
+        if (found.nomeLinha != NULL) free(found.nomeLinha);
     }
 
     //se acho ninguem: falar isso
