@@ -330,16 +330,16 @@ searchstruct Btree_Search(FILE* BtreeBIN, int key, int RRN){
         else if(key == node.C3) result.pointer = node.PR3;
 
         result.found = true;
-
+        return result;
     }
     //se nao deu match
     if(next == -1){
         result.is_leaf = true;
         result.pointer = RRN;
         result.found = false;
+        return result;
     }
 
-    return result;
     //recursão
     return Btree_Search(BtreeBIN, key, next);
     
