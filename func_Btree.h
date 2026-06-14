@@ -93,7 +93,8 @@ typedef struct {
     int search_aux(int key, Btree_Node node, int* pos_in_node);
     
     //pesquisa uma chave na arvore b;
-    //retorna byte offset do arquivo de dados ou byte offset do arquivo de indice do que achou
+    //retorna RRN do arquivo de dados ou RRN da folha vazia de onde a pesquisa cair
+    //a struct tem um bool pra dizer qual tipo achou
     searchstruct Btree_Search(FILE* BtreeBIN, int key, int RRN);
     
     //Insere ordernado em um nó que não está cheio e escreve em disco
@@ -135,7 +136,19 @@ typedef struct {
     //Concatenacao direita, só tem a lógica de concatenacao entre nós, não mexe no disco
     void node_right_merge(int underflowNodeRRN, Btree_Node* underflowNode,  Btree_Node* father, Btree_Node* rightNode);
 
-    //função recursiva pra deleção. retorna se houve underflow
-    void Btree_Delete_Recursive();
+    //Remove a chave em pos_in_node (1, 2 ou 3) de um nó, shift das restantes, sem I/O
+    void node_remove_key(Btree_Node* node, int pos_in_node);
+
+    //Trata o underflow de um filho (child_RRN) a partir do pai (parent_RRN)
+    //Tenta: redistribuição direita → esquerda → concatenação esquerda → concatenação direita
+    //Retorna 1 se o pai também ficou com underflow, 0 caso contrário
+    int handle_child_underflow(FILE* BtreeBIN, Btree_Header* head, int parent_RRN, int child_RRN);
+
+    //Recursão de remoção na árvore B
+    //Retorna: 0 = ok, 1 = underflow neste nó, -1 = chave não encontrada
+    int delete_recursion(FILE* BtreeBIN, Btree_Header* head, int curr_RRN, int key);
+
+    //Ponto de entrada da remoção: chama delete_recursion e trata underflow da raiz
+    void delete_btree(FILE* BtreeBIN, Btree_Header* head, int key);
 
  #endif
