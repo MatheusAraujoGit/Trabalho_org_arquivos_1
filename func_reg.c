@@ -472,7 +472,8 @@ void regHeader_updateNEstacoesEPares(FILE* BIN){
     //Escrevo o novo Header
     regHeader_write(BIN, &tempHead);
 
-    //Desaloco memoria do TempData
+    //Desaloco memoria do TempData e dos nomes unicos
+    free(nomesUnicos);
     if (tempData.nomeEstacao != NULL) free(tempData.nomeEstacao);
     if (tempData.nomeLinha != NULL) free(tempData.nomeLinha);
 }

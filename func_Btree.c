@@ -60,6 +60,9 @@ void search_in_btree(FILE* BtreeBIN, FILE* dataBIN){
     //se nao tiver codEstaçao na pesquisa, fallback pra funcionalidade 3
     if(criteria.codEstacao == -2){
         search_no_keyboard(dataBIN, criteria);
+
+        if (criteria.nomeEstacao != NULL) free(criteria.nomeEstacao);
+        if (criteria.nomeLinha != NULL) free(criteria.nomeLinha);
         return;
     }
 
