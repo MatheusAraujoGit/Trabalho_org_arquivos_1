@@ -141,7 +141,7 @@ void delete_with_btree(FILE* BtreeBIN, FILE* dataBIN){
     }
 
     //segundo: nao tiver codEstaçao na pesquisa, fallback linear:
-    //mesma coisa da func4 mas modificada pra tb deletar da arvore b 
+    //mesma coisa da func4 mas tb chama a funçao de deletar da arvore b 
     if(criteria.codEstacao == -2){
         //func4
         regData tempData;
@@ -153,6 +153,7 @@ void delete_with_btree(FILE* BtreeBIN, FILE* dataBIN){
         while(regData_read(dataBIN, &tempData) != -1){
             RRN++;
             if(tempData.removido == '1') continue;
+            //double check
             if(do_they_match(criteria, tempData)){
                 int codParaRemover = tempData.codEstacao;
                 regData_DeleteRegistry(dataBIN, &datahead, RRN);
@@ -920,16 +921,16 @@ void node_left_merge(int underflowNodeRRN, Btree_Node* underflowNode, Btree_Node
 }
 
 //Remove a chave em pos_in_node (1, 2 ou 3) de um nó, faz shift das restantes para esquerda
-//Não mexe com ponteiros P (uso restrito a folhas na remoção)
+//Não mexe com os ponteiros P
 void node_remove_key(Btree_Node* node, int pos_in_node){
     if(pos_in_node == 1){
         node->C1 = node->C2; node->PR1 = node->PR2;
         node->C2 = node->C3; node->PR2 = node->PR3;
-        node->C3 = -1;       node->PR3 = -1;
+        node->C3 = -1; node->PR3 = -1;
     }
     else if(pos_in_node == 2){
         node->C2 = node->C3; node->PR2 = node->PR3;
-        node->C3 = -1;       node->PR3 = -1;
+        node->C3 = -1; node->PR3 = -1;
     }
     else{ //pos == 3
         node->C3 = -1; node->PR3 = -1;
@@ -994,7 +995,7 @@ void node_right_merge(int underflowNodeRRN, Btree_Node* underflowNode,  Btree_No
 }
 
 //Trata o underflow de um filho (child_RRN) a partir do pai (parent_RRN)
-//Ordem: redistribuição direita → redistribuição esquerda → concatenação esquerda → concatenação direita
+//Ordem: redistribuição direita -> redistribuição esquerda -> concatenação esquerda -> concatenação direita
 //Retorna 1 se o pai também ficou com underflow após concatenação, 0 caso contrário
 int handle_child_underflow(FILE* BtreeBIN, Btree_Header* head, int parent_RRN, int child_RRN){
 
@@ -1003,18 +1004,18 @@ int handle_child_underflow(FILE* BtreeBIN, Btree_Header* head, int parent_RRN, i
     Btree_Node parentNode = Btree_ReadNode(BtreeBIN);
 
     int child_idx = 0;
-    if(child_RRN == parentNode.P1)      child_idx = 1;
+    if(child_RRN == parentNode.P1) child_idx = 1;
     else if(child_RRN == parentNode.P2) child_idx = 2;
     else if(child_RRN == parentNode.P3) child_idx = 3;
     else if(child_RRN == parentNode.P4) child_idx = 4;
 
     //Determinar RRNs dos irmãos
-    int left_RRN  = -1;
+    int left_RRN = -1;
     int right_RRN = -1;
-    if(child_idx == 1)       {                      right_RRN = parentNode.P2; }
-    else if(child_idx == 2)  { left_RRN = parentNode.P1; right_RRN = parentNode.P3; }
-    else if(child_idx == 3)  { left_RRN = parentNode.P2; right_RRN = parentNode.P4; }
-    else if(child_idx == 4)  { left_RRN = parentNode.P3;                       }
+    if(child_idx == 1) right_RRN = parentNode.P2;
+    else if(child_idx == 2){ left_RRN = parentNode.P1; right_RRN = parentNode.P3; }
+    else if(child_idx == 3){ left_RRN = parentNode.P2; right_RRN = parentNode.P4; }
+    else if(child_idx == 4) left_RRN = parentNode.P3;
 
     //Ler o nó com underflow e os irmãos que existem
     fseek(BtreeBIN, BTree_RRN2BYTE(child_RRN), SEEK_SET);
@@ -1022,15 +1023,15 @@ int handle_child_underflow(FILE* BtreeBIN, Btree_Header* head, int parent_RRN, i
 
     Btree_Node rightNode, leftNode;
     if(right_RRN != -1){ fseek(BtreeBIN, BTree_RRN2BYTE(right_RRN), SEEK_SET); rightNode = Btree_ReadNode(BtreeBIN); }
-    if(left_RRN  != -1){ fseek(BtreeBIN, BTree_RRN2BYTE(left_RRN),  SEEK_SET); leftNode  = Btree_ReadNode(BtreeBIN); }
+    if(left_RRN  != -1){ fseek(BtreeBIN, BTree_RRN2BYTE(left_RRN), SEEK_SET); leftNode = Btree_ReadNode(BtreeBIN); }
 
     //--- 1. Redistribuição com irmão direito ---
     if(right_RRN != -1 && rightNode.nroChaves > 1){
         node_right_redistribution(child_RRN, &childNode, &parentNode, &rightNode);
 
-        fseek(BtreeBIN, BTree_RRN2BYTE(child_RRN),  SEEK_SET); Btree_WriteNode(BtreeBIN, &childNode);
+        fseek(BtreeBIN, BTree_RRN2BYTE(child_RRN), SEEK_SET); Btree_WriteNode(BtreeBIN, &childNode);
         fseek(BtreeBIN, BTree_RRN2BYTE(parent_RRN), SEEK_SET); Btree_WriteNode(BtreeBIN, &parentNode);
-        fseek(BtreeBIN, BTree_RRN2BYTE(right_RRN),  SEEK_SET); Btree_WriteNode(BtreeBIN, &rightNode);
+        fseek(BtreeBIN, BTree_RRN2BYTE(right_RRN), SEEK_SET); Btree_WriteNode(BtreeBIN, &rightNode);
         return 0;
     }
 
@@ -1038,9 +1039,9 @@ int handle_child_underflow(FILE* BtreeBIN, Btree_Header* head, int parent_RRN, i
     if(left_RRN != -1 && leftNode.nroChaves > 1){
         node_left_redistribution(child_RRN, &childNode, &parentNode, &leftNode);
 
-        fseek(BtreeBIN, BTree_RRN2BYTE(child_RRN),  SEEK_SET); Btree_WriteNode(BtreeBIN, &childNode);
+        fseek(BtreeBIN, BTree_RRN2BYTE(child_RRN), SEEK_SET); Btree_WriteNode(BtreeBIN, &childNode);
         fseek(BtreeBIN, BTree_RRN2BYTE(parent_RRN), SEEK_SET); Btree_WriteNode(BtreeBIN, &parentNode);
-        fseek(BtreeBIN, BTree_RRN2BYTE(left_RRN),   SEEK_SET); Btree_WriteNode(BtreeBIN, &leftNode);
+        fseek(BtreeBIN, BTree_RRN2BYTE(left_RRN), SEEK_SET); Btree_WriteNode(BtreeBIN, &leftNode);
         return 0;
     }
 
@@ -1053,8 +1054,8 @@ int handle_child_underflow(FILE* BtreeBIN, Btree_Header* head, int parent_RRN, i
         head->topo = child_RRN;
         head->nroNos--;
 
-        fseek(BtreeBIN, BTree_RRN2BYTE(left_RRN),   SEEK_SET); Btree_WriteNode(BtreeBIN, &leftNode);
-        fseek(BtreeBIN, BTree_RRN2BYTE(child_RRN),  SEEK_SET); Btree_WriteNode(BtreeBIN, &childNode);
+        fseek(BtreeBIN, BTree_RRN2BYTE(left_RRN), SEEK_SET); Btree_WriteNode(BtreeBIN, &leftNode);
+        fseek(BtreeBIN, BTree_RRN2BYTE(child_RRN), SEEK_SET); Btree_WriteNode(BtreeBIN, &childNode);
         fseek(BtreeBIN, BTree_RRN2BYTE(parent_RRN), SEEK_SET); Btree_WriteNode(BtreeBIN, &parentNode);
         return (parentNode.nroChaves < 1) ? 1 : 0;
     }
@@ -1068,8 +1069,8 @@ int handle_child_underflow(FILE* BtreeBIN, Btree_Header* head, int parent_RRN, i
         head->topo = right_RRN;
         head->nroNos--;
 
-        fseek(BtreeBIN, BTree_RRN2BYTE(child_RRN),  SEEK_SET); Btree_WriteNode(BtreeBIN, &childNode);
-        fseek(BtreeBIN, BTree_RRN2BYTE(right_RRN),  SEEK_SET); Btree_WriteNode(BtreeBIN, &rightNode);
+        fseek(BtreeBIN, BTree_RRN2BYTE(child_RRN), SEEK_SET); Btree_WriteNode(BtreeBIN, &childNode);
+        fseek(BtreeBIN, BTree_RRN2BYTE(right_RRN), SEEK_SET); Btree_WriteNode(BtreeBIN, &rightNode);
         fseek(BtreeBIN, BTree_RRN2BYTE(parent_RRN), SEEK_SET); Btree_WriteNode(BtreeBIN, &parentNode);
         return (parentNode.nroChaves < 1) ? 1 : 0;
     }
@@ -1083,10 +1084,12 @@ int delete_recursion(FILE* BtreeBIN, Btree_Header* head, int curr_RRN, int key){
 
     if(curr_RRN == -1) return -1;
 
+    //ler prox no
     fseek(BtreeBIN, BTree_RRN2BYTE(curr_RRN), SEEK_SET);
     Btree_Node node = Btree_ReadNode(BtreeBIN);
 
-    int pos = 0;
+    int pos;
+    //procurar chave na arvore
     int next = search_aux(key, node, &pos);
 
     if(next == -2){ //deu match aqui
@@ -1110,7 +1113,7 @@ int delete_recursion(FILE* BtreeBIN, Btree_Header* head, int curr_RRN, int key){
 
     if(next == -1) return -1; //pesquisa caiu em folha vazia: chave não existe
 
-    //Descer para o filho correto e tratar underflow no retorno
+    //Descer na recursão e tratar underflow no retorno
     int result = delete_recursion(BtreeBIN, head, next, key);
     if(result == 1) return handle_child_underflow(BtreeBIN, head, curr_RRN, next);
     return result;
@@ -1124,10 +1127,12 @@ void delete_btree(FILE* BtreeBIN, Btree_Header* head, int key){
     int result = delete_recursion(BtreeBIN, head, head->noRaiz, key);
 
     if(result == 1){ //deu underflow na raiz
+        //ler a raiz
         fseek(BtreeBIN, BTree_RRN2BYTE(head->noRaiz), SEEK_SET);
         Btree_Node rootNode = Btree_ReadNode(BtreeBIN);
 
         if(rootNode.P1 == -1){ //era folha-raiz: árvore ficou vazia
+            //empilhar raiz na pilha de removidos
             rootNode.removido = '1';
             rootNode.proximo = head->topo;
             head->topo = head->noRaiz;
@@ -1141,10 +1146,14 @@ void delete_btree(FILE* BtreeBIN, Btree_Header* head, int key){
             int old_root_RRN = head->noRaiz;
             head->noRaiz = rootNode.P1;
 
-            //Atualizar tipoNo da nova raiz
+            //atualizar tipoNo da nova raiz: primeiro ler ela
             fseek(BtreeBIN, BTree_RRN2BYTE(rootNode.P1), SEEK_SET);
             Btree_Node newRoot = Btree_ReadNode(BtreeBIN);
+
+            //ver se a nova raiz eh raiz-folha ou não e atualizar o tipo
             newRoot.tipoNo = (newRoot.P1 == -1) ? -1 : 0;
+
+            //escrever nova raiz
             fseek(BtreeBIN, BTree_RRN2BYTE(rootNode.P1), SEEK_SET);
             Btree_WriteNode(BtreeBIN, &newRoot);
 
