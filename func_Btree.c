@@ -335,11 +335,13 @@ int search_aux(int key, Btree_Node node, int* pos_in_node){
 }
 
 //pesquisa uma chave na arvore b;
-//retorna RRN do arquivo de dados ou RRN da folha vazia de onde a pesquisa cair
+//retorna struct com resultado da pesquisa
 searchstruct Btree_Search(FILE* BtreeBIN, int key, int RRN){
+    //carregar nó atual
     fseek(BtreeBIN, BTree_RRN2BYTE(RRN), SEEK_SET);
     Btree_Node node = Btree_ReadNode(BtreeBIN);
     
+    //construir struct de resultado e procurar proximo nó
     searchstruct result;
     int pos;
     int next = search_aux(key, node, &pos);
@@ -356,7 +358,7 @@ searchstruct Btree_Search(FILE* BtreeBIN, int key, int RRN){
 
         return result;
     }
-    //se nao deu match
+    //se nao deu match (caiu em folha vazia)
     if(next == -1){
         
         result.pointer = RRN;
@@ -1084,7 +1086,7 @@ int delete_recursion(FILE* BtreeBIN, Btree_Header* head, int curr_RRN, int key){
 
     if(curr_RRN == -1) return -1;
 
-    //ler prox no
+    //ler no atual
     fseek(BtreeBIN, BTree_RRN2BYTE(curr_RRN), SEEK_SET);
     Btree_Node node = Btree_ReadNode(BtreeBIN);
 
@@ -1106,6 +1108,7 @@ int delete_recursion(FILE* BtreeBIN, Btree_Header* head, int curr_RRN, int key){
         swap_for_immediate_successor(BtreeBIN, key, curr_RRN);
         //key agora está em C1 da folha mais à esquerda de P_right
 
+        //descer na recursão e tratar underflow no retorno
         int result = delete_recursion(BtreeBIN, head, P_right, key);
         if(result == 1) return handle_child_underflow(BtreeBIN, head, curr_RRN, P_right);
         return 0;

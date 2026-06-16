@@ -36,8 +36,6 @@ typedef struct {
 } Btree_Node;
 
 //struct pra retorno da pesquisa
-//preciso disso pra saber se o que voltou de uma pesquisa é um ponteiro de dados ou um no em arvore b
-//e tambem pra saber se encontrou ou nao
 
 typedef struct {
     bool is_leaf;
@@ -93,8 +91,7 @@ typedef struct {
     int search_aux(int key, Btree_Node node, int* pos_in_node);
     
     //pesquisa uma chave na arvore b;
-    //retorna RRN do arquivo de dados ou RRN da folha vazia de onde a pesquisa cair
-    //a struct tem um bool pra dizer qual tipo achou
+    //retorna struct com resultado da pesquisa
     searchstruct Btree_Search(FILE* BtreeBIN, int key, int RRN);
     
     //Insere ordernado em um nó que não está cheio e escreve em disco
