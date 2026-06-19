@@ -5,7 +5,7 @@
 // ----------------------------------------------------------------------------------------------------------------------------------------
 
 //func11
-void self_union_nestedLoop(FILE* BIN, FILE* BIN2){
+void union_nestedLoop(FILE* BIN, FILE* BIN2){
     regData tempData1;
     regData tempData2;
 
@@ -53,8 +53,19 @@ void self_union_nestedLoop(FILE* BIN, FILE* BIN2){
 }
     
 //func12
-void func12(){
+void union_singleLoop(FILE* BIN, FILE* BIN2){
+    regData tempData1;
+    regData tempData2;
 
+    tempData1.nomeEstacao = NULL;
+    tempData1.nomeLinha = NULL;
+    tempData2.nomeEstacao = NULL;
+    tempData2.nomeLinha = NULL;
+
+    regData_read(BIN, &tempData1);
+    regData_read(BIN2, &tempData2);
+
+    printf("todo!\n");
 }
 
 //func13
@@ -70,7 +81,3 @@ void func14(){
 // ----------------------------------------------------------------------------------------------------------------------------------------
 //                                            funções usadas nas implementações das funcionalidades
 // ----------------------------------------------------------------------------------------------------------------------------------------
-
-void nested_loop_union(){
-
-}

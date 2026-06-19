@@ -458,7 +458,7 @@ int main()
             }
 
             //executar funcionalidade
-            self_union_nestedLoop(BIN, BIN2);
+            union_nestedLoop(BIN, BIN2);
 
             //fechar
             fclose(BIN);
@@ -467,7 +467,42 @@ int main()
          
         //--------
         case 12: //funcionalidade 12: self-union de codEstacao e codProxEstacao usando single loop
-            printf("funcionalidade 12 não implementada!");
+            //ler nomes dos arquivos (com essa especificaçao, so preciso ler os nomes de arquivos)
+            scanf("%s", bin_name);
+            scanf("%s", trash);
+            scanf("%s", bin2_name);
+
+            //tentar abrir arquivos + errorcheck
+            BIN = fopen(bin_name, "rb");
+            if (BIN == NULL){
+                error_flag = true;
+                break;
+            }
+            regHeader_read(BIN, &header);
+            if(header.status == '0'){
+                error_flag = true;
+                fclose(BIN);
+                break;
+            }
+
+            BIN2 = fopen(bin2_name, "rb");
+            if (BIN2 == NULL){
+                error_flag = true;
+                break;
+            }
+            regHeader_read(BIN2, &header);
+            if(header.status == '0'){
+                error_flag = true;
+                fclose(BIN2);
+                break;
+            }
+
+            //executar funcionalidade
+            union_singleLoop(BIN, BIN2);
+
+            //fechar
+            fclose(BIN);
+            fclose(BIN2);
         break;
 
         //--------

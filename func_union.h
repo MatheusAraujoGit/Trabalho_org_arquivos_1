@@ -14,10 +14,10 @@
 // ----------------------------------------------------------------------------------------------------------------------------------------
     
     //func11
-    void self_union_nestedLoop(FILE* BIN, FILE* BIN2);
+    void union_nestedLoop(FILE* BIN, FILE* BIN2);
     
     //func12
-    void func12();
+    void union_singleLoop(FILE* BIN, FILE* BIN2);
 
     //func13
     void func13();
