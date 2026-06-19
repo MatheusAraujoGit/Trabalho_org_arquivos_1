@@ -8,6 +8,7 @@
 #include "func_reg.h"
 #include "func_csv.h"
 #include "func_Btree.h"
+#include "func_union.h"
 
 int main()
 {
@@ -419,6 +420,22 @@ int main()
             BinarioNaTela(bin_name);
             BinarioNaTela(btree_name);
         break;
+
+        //--------
+        case 11:
+            printf("funcionalidade 11 não implementada!");
+
+        //--------
+        case 12:
+            printf("funcionalidade 12 não implementada!");
+
+        //--------
+        case 13:
+            printf("funcionalidade 13 não implementada!");
+
+        //--------
+        case 14:
+            printf("funcionalidade 14 não implementada!");
 
     default:
         printf("funcionalidade %d não definida!", option);
