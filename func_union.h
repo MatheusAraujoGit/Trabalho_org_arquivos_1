@@ -8,6 +8,8 @@
 #include <stdlib.h>
 #include <stdbool.h>
 #include <string.h>
+#include "func_reg.h"
+#include "auxiliares.h"
 
 // ----------------------------------------------------------------------------------------------------------------------------------------
 //                                                   funcionalidades do trabalho
@@ -20,7 +22,7 @@
     void union_singleLoop(FILE* BIN, FILE* BIN2);
 
     //func13
-    void func13();
+    void sort_file(FILE* BIN, FILE* newBIN, regHeader header, char* sortField);
     
     //func14
     void func14();
@@ -29,5 +31,11 @@
 //                                            funções usadas nas implementações das funcionalidades
 // ----------------------------------------------------------------------------------------------------------------------------------------
 
+regData* dataBIN2MemoryData(FILE* BIN, int* sizeOutput);
 
+void sortMemoryData(regData* dataArray, int size, int type);
+
+void writeMemoryDataBIN(FILE* BIN, regData* dataArray, int size, regHeader* header);
+
+void freeMemoryData(regData* dataArray, int size);
 #endif

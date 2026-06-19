@@ -507,7 +507,38 @@ int main()
 
         //--------
         case 13:
-            printf("funcionalidade 13 não implementada!");
+            char sortField[100];
+            scanf("%s", bin_name);
+            scanf("%s", sortField);
+            scanf("%s", bin2_name);
+
+            //tentar abrir arquivos + errorcheck
+            BIN = fopen(bin_name, "rb");
+            if (BIN == NULL){
+                error_flag = true;
+                break;
+            }
+            regHeader_read(BIN, &header);
+            if(header.status == '0'){
+                error_flag = true;
+                fclose(BIN);
+                break;
+            }
+
+            BIN2 = fopen(bin2_name, "wb");
+            if (BIN2 == NULL){
+                error_flag = true;
+                break;
+            }
+
+            //executar funcionalidade
+            sort_file(BIN, BIN2, header, sortField);
+
+            //fechar
+            fclose(BIN);
+            fclose(BIN2);
+
+            BinarioNaTela(bin2_name);
         break;
 
         //--------
