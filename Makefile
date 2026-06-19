@@ -5,7 +5,7 @@ CFLAGS = -Wall -Wextra -g
 #output
 TARGET = programTrab
 #sources
-SRCS = main.c auxiliares.c func_Btree.c func_csv.c func_reg.c
+SRCS = main.c auxiliares.c func_Btree.c func_csv.c func_reg.c func_union.c
 
 #get object file names from source files
 OBJS = $(SRCS:.c=.o)

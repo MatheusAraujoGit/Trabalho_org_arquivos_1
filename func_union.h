@@ -4,12 +4,17 @@
 #ifndef FUNC_UNION_H
 #define FUNC_UNION_H
 
+#include <stdio.h>
+#include <stdlib.h>
+#include <stdbool.h>
+#include <string.h>
+
 // ----------------------------------------------------------------------------------------------------------------------------------------
 //                                                   funcionalidades do trabalho
 // ----------------------------------------------------------------------------------------------------------------------------------------
     
     //func11
-    void func11();
+    void self_union_nestedLoop(FILE* BIN, FILE* BIN2);
     
     //func12
     void func12();

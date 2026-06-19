@@ -14,9 +14,12 @@ int main()
 {
     char csv_name[100];
     char bin_name[100];
+    char bin2_name[100];
+    char trash[100];
     char btree_name[100];
     FILE* CSV;
     FILE* BIN;
+    FILE* BIN2;
     FILE* BTREE;
     regHeader header;
     Btree_Header Btreehead;
@@ -365,7 +368,7 @@ int main()
         break;
 
         //--------
-        case 10:
+        case 10: //funcionalidade 10: deletar registros incluindo btree
             //ler nome dos arquivos
             scanf("%s", bin_name);
             scanf("%s", btree_name);
@@ -422,20 +425,60 @@ int main()
         break;
 
         //--------
-        case 11:
-            printf("funcionalidade 11 não implementada!");
+        case 11: //funcionalidade 11: self-union de codEstacao e codProxEstacao usando nested loop
 
+            //ler nomes dos arquivos (com essa especificaçao, so preciso ler os nomes de arquivos)
+            scanf("%s", bin_name);
+            scanf("%s", trash);
+            scanf("%s", bin2_name);
+
+            //tentar abrir arquivos + errorcheck
+            BIN = fopen(bin_name, "rb");
+            if (BIN == NULL){
+                error_flag = true;
+                break;
+            }
+            regHeader_read(BIN, &header);
+            if(header.status == '0'){
+                error_flag = true;
+                fclose(BIN);
+                break;
+            }
+
+            BIN2 = fopen(bin2_name, "rb");
+            if (BIN2 == NULL){
+                error_flag = true;
+                break;
+            }
+            regHeader_read(BIN2, &header);
+            if(header.status == '0'){
+                error_flag = true;
+                fclose(BIN2);
+                break;
+            }
+
+            //executar funcionalidade
+            self_union_nestedLoop(BIN, BIN2);
+
+            //fechar
+            fclose(BIN);
+            fclose(BIN2);
+        break;
+         
         //--------
-        case 12:
+        case 12: //funcionalidade 12: self-union de codEstacao e codProxEstacao usando single loop
             printf("funcionalidade 12 não implementada!");
+        break;
 
         //--------
         case 13:
             printf("funcionalidade 13 não implementada!");
+        break;
 
         //--------
         case 14:
             printf("funcionalidade 14 não implementada!");
+        break;
 
     default:
         printf("funcionalidade %d não definida!", option);

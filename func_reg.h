@@ -110,6 +110,12 @@ typedef struct
     //escreve um novo registro de dado
     void regData_write(FILE *outputBIN, regData *pregData);
 
+    //printa um inteiro de um registro
+    void regData_printInt(int input);
+
+    //printa uma string de um registro
+    void regData_printString(char *string);
+
     //imprime um registro de dado
     void regData_printData(regData registro);
 
