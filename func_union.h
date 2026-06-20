@@ -25,7 +25,7 @@
     void sort_file(FILE* BIN, FILE* newBIN, regHeader header, char* sortField);
     
     //func14
-    void func14();
+    void union_sort_merge(FILE* BIN, regHeader header, FILE* BIN2, regHeader header2);
     
 // ----------------------------------------------------------------------------------------------------------------------------------------
 //                                            funções usadas nas implementações das funcionalidades

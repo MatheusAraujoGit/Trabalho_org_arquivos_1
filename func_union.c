@@ -80,11 +80,70 @@ void sort_file(FILE* BIN, FILE* newBIN, regHeader header, char* sortField){
     sortMemoryData(dataArray, arraySize, type);
     writeMemoryDataBIN(newBIN, dataArray, arraySize, &header);
     freeMemoryData(dataArray, arraySize);
+
 }
     
 //func14
-void func14(){
+//Reescreve os arquivos para ficarem ordenados
+//como nesse trabalho os nomeCampos são fixos, vou ja considerar os valores deles como na especificacao
+void union_sort_merge(FILE* BIN, regHeader header, FILE* BIN2, regHeader header2){
+    //Ordeno os dois arquivos, já que eu estou sobreescrevendo os arquivos, eles nao vao diminuir de tamanho e vou precisar
+    //usar o proxRRN para saber o fim deles e nao ler lixo
+    sort_file(BIN, BIN, header, "codProxEstacao");
+    sort_file(BIN2, BIN2, header2, "codEstacao");
 
+    fseek(BIN, 0, SEEK_SET);
+    fseek(BIN2, 0, SEEK_SET);
+
+    //Leio novos headers
+    regHeader newHeader;
+    regHeader newHeader2;
+    regHeader_read(BIN, &newHeader);
+    regHeader_read(BIN2, &newHeader2);
+
+    if(newHeader.proxRRN == 0 || newHeader2.proxRRN == 0) return;
+
+    regData regA;
+    regData regB;
+
+    //Adoro strings dinâmicas
+    regA.nomeEstacao = NULL;
+    regA.nomeLinha = NULL;
+    regB.nomeEstacao = NULL;
+    regB.nomeLinha = NULL;
+
+    regData_read(BIN, &regA);
+    regData_read(BIN2, &regB);
+
+    int firstBINsteps = 0;
+    int secBINsteps = 0;
+    while(firstBINsteps < newHeader.proxRRN && secBINsteps < newHeader2.proxRRN){
+        if(regA.codProxEstacao < regB.codEstacao){
+            regData_read(BIN, &regA);
+            firstBINsteps++;
+        }
+        if(regA.codProxEstacao > regB.codEstacao){
+            regData_read(BIN2, &regB);
+            secBINsteps++;
+        }
+        if(regA.codProxEstacao == regB.codEstacao){
+                regData_printInt(regA.codEstacao);
+                regData_printString(regA.nomeEstacao);
+                regData_printString(regA.nomeLinha);
+                regData_printInt(regA.codProxEstacao);
+                regData_printString(regB.nomeEstacao);
+                printf("\n");
+                regData_read(BIN2, &regB);
+                regData_read(BIN, &regA);
+                firstBINsteps++;
+                secBINsteps++;
+        }
+    }
+
+    if(regA.nomeEstacao != NULL) free(regA.nomeEstacao);
+    if(regA.nomeLinha != NULL) free(regA.nomeLinha);
+    if(regB.nomeEstacao != NULL) free(regB.nomeEstacao);
+    if(regB.nomeLinha != NULL) free(regB.nomeLinha);
 }
 
 // ----------------------------------------------------------------------------------------------------------------------------------------
@@ -160,6 +219,7 @@ void sortMemoryData(regData* dataArray, int size, int type){
 //Cria novo arquivo ordenado, NÃO cuida da desalocação do array
 void writeMemoryDataBIN(FILE* BIN, regData* dataArray, int size, regHeader* header){
     //Pilha de removidos vai resetar e proxRRN vai mudar
+    header->status = '0';
     header->topo = -1;
     header->proxRRN = size;
     regHeader_write(BIN, header);

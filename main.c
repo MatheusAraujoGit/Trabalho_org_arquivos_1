@@ -534,6 +534,8 @@ int main()
             //executar funcionalidade
             sort_file(BIN, BIN2, header, sortField);
 
+            regHeader_setFileConsistent(BIN2);
+
             //fechar
             fclose(BIN);
             fclose(BIN2);
@@ -543,7 +545,48 @@ int main()
 
         //--------
         case 14:
-            printf("funcionalidade 14 não implementada!");
+            scanf("%s", bin_name);
+            scanf("%s", trash);
+            scanf("%s", bin2_name);
+            scanf("%s", trash);
+
+            //tentar abrir arquivos + errorcheck
+            //uso rb+ pq vou ordenar os arquivos no sort_merge
+            BIN = fopen(bin_name, "rb+");
+            if (BIN == NULL){
+                error_flag = true;
+                break;
+            }
+            regHeader_read(BIN, &header);
+            if(header.status == '0'){
+                error_flag = true;
+                fclose(BIN);
+                break;
+            }
+
+            BIN2 = fopen(bin2_name, "rb+");
+            if (BIN2 == NULL){
+                error_flag = true;
+                break;
+            }
+            regHeader secHeader;
+            regHeader_read(BIN2, &secHeader);
+            if(secHeader.status == '0'){
+                error_flag = true;
+                fclose(BIN);
+                fclose(BIN2);
+                break;
+            }
+
+            //executar funcionalidade
+            union_sort_merge(BIN, header, BIN2, secHeader);
+            
+            regHeader_setFileConsistent(BIN);
+            regHeader_setFileConsistent(BIN2);
+
+            //fechar
+            fclose(BIN);
+            fclose(BIN2);
         break;
 
     default:
