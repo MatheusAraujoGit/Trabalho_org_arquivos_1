@@ -448,11 +448,13 @@ int main()
             BIN2 = fopen(bin2_name, "rb");
             if (BIN2 == NULL){
                 error_flag = true;
+                fclose(BIN);
                 break;
             }
             regHeader_read(BIN2, &header);
             if(header.status == '0'){
                 error_flag = true;
+                fclose(BIN);
                 fclose(BIN2);
                 break;
             }
@@ -488,11 +490,13 @@ int main()
             BIN2 = fopen(bin2_name, "rb");
             if (BIN2 == NULL){
                 error_flag = true;
+                fclose(BIN);
                 break;
             }
             regHeader_read(BIN2, &header);
             if(header.status == '0'){
                 error_flag = true;
+                fclose(BIN);
                 fclose(BIN2);
                 break;
             }
@@ -506,7 +510,7 @@ int main()
         break;
 
         //--------
-        case 13:
+        case 13: //funcionalidade 13: sortar um arquivo por codEstacao ou codProxEst
             char sortField[100];
             scanf("%s", bin_name);
             scanf("%s", sortField);
@@ -528,23 +532,26 @@ int main()
             BIN2 = fopen(bin2_name, "wb");
             if (BIN2 == NULL){
                 error_flag = true;
+                fclose(BIN);
+                fclose(BIN2);
                 break;
             }
 
             //executar funcionalidade
-            sort_file(BIN, BIN2, header, sortField);
+            sort_file(BIN, BIN2, sortField);
 
+            //setar consistente
             regHeader_setFileConsistent(BIN2);
 
-            //fechar
+            //fechar e imprimir
             fclose(BIN);
             fclose(BIN2);
 
             BinarioNaTela(bin2_name);
         break;
 
-        //--------
-        case 14:
+        //-------- 
+        case 14: //funcionalidade 14: unir 2 arquivos sortados
             scanf("%s", bin_name);
             scanf("%s", trash);
             scanf("%s", bin2_name);
@@ -567,11 +574,11 @@ int main()
             BIN2 = fopen(bin2_name, "rb+");
             if (BIN2 == NULL){
                 error_flag = true;
+                fclose(BIN);
                 break;
             }
-            regHeader secHeader;
-            regHeader_read(BIN2, &secHeader);
-            if(secHeader.status == '0'){
+            regHeader_read(BIN2, &header);
+            if(header.status == '0'){
                 error_flag = true;
                 fclose(BIN);
                 fclose(BIN2);
@@ -579,8 +586,9 @@ int main()
             }
 
             //executar funcionalidade
-            union_sort_merge(BIN, header, BIN2, secHeader);
+            union_sort_merge(BIN, BIN2);
             
+            //setar consistente
             regHeader_setFileConsistent(BIN);
             regHeader_setFileConsistent(BIN2);
 

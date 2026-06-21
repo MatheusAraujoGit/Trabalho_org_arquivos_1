@@ -66,10 +66,19 @@ void union_singleLoop(FILE* BIN, FILE* BIN2){
     regData_read(BIN2, &tempData2);
 
     printf("todo!\n");
+
+    if (tempData1.nomeEstacao != NULL) free(tempData1.nomeEstacao);
+    if (tempData1.nomeLinha != NULL) free(tempData1.nomeLinha);
+    if (tempData2.nomeEstacao != NULL) free(tempData2.nomeEstacao);
+    if (tempData2.nomeLinha != NULL) free(tempData2.nomeLinha);
 }
 
 //Importa tudo para memoria, ordena de acordo com um dos dois campos possiveis e reescreve em um novo arquivo
-void sort_file(FILE* BIN, FILE* newBIN, regHeader header, char* sortField){
+void sort_file(FILE* BIN, FILE* newBIN, char* sortField){
+
+    regHeader header;
+    regHeader_read(BIN, &header);
+
     int type = -1;
     if(strcmp("codEstacao", sortField) == 0) type = 0;
     if(strcmp("codProxEstacao", sortField) == 0) type = 1;
@@ -77,21 +86,20 @@ void sort_file(FILE* BIN, FILE* newBIN, regHeader header, char* sortField){
     int arraySize = 0;
     regData* dataArray = dataBIN2MemoryData(BIN, &arraySize);
     sortMemoryData(dataArray, arraySize, type);
-    writeMemoryDataBIN(newBIN, dataArray, arraySize, &header);
-    freeMemoryData(dataArray, arraySize);
+    create_DataBIN_from_memory(newBIN, dataArray, arraySize, &header);
 
+    free_MemoryData(dataArray, arraySize);
 }
     
-//Reescreve os arquivos para ficarem ordenados
+//Reescreve os arquivos para ficarem ordenados e depois faz a união
 //como nesse trabalho os nomeCampos são fixos, vou ja considerar os valores deles como na especificacao
-void union_sort_merge(FILE* BIN, regHeader header, FILE* BIN2, regHeader header2){
-    //Ordeno os dois arquivos, já que eu estou sobreescrevendo os arquivos, eles nao vao diminuir de tamanho e vou precisar
-    //usar o proxRRN para saber o fim deles e nao ler lixo
-    sort_file(BIN, BIN, header, "codProxEstacao");
-    sort_file(BIN2, BIN2, header2, "codEstacao");
+void union_sort_merge(FILE* BIN, FILE* BIN2){
 
-    fseek(BIN, 0, SEEK_SET);
-    fseek(BIN2, 0, SEEK_SET);
+    //Ordeno os dois arquivos usando funcionalidade 13
+    //já que eu estou sobreescrevendo os arquivos, eles nao vao diminuir de tamanho e vou precisar
+    //usar o proxRRN para saber o fim deles e nao ler lixo
+    sort_file(BIN, BIN, "codProxEstacao");
+    sort_file(BIN2, BIN2, "codEstacao");
 
     //Leio novos headers
     regHeader newHeader;
@@ -148,11 +156,13 @@ void union_sort_merge(FILE* BIN, regHeader header, FILE* BIN2, regHeader header2
 //                                            funções usadas nas implementações das funcionalidades
 // ----------------------------------------------------------------------------------------------------------------------------------------
 
-//Supõe que a posição do arquivo ja passou do header
-//retorna array de dados na memoria e escreve o numero de registros no endereco sizeOutput
+//cria e retorna array de dados na memoria e escreve o numero de registros no endereco sizeOutput
+//ignora o header
 regData* dataBIN2MemoryData(FILE* BIN, int* sizeOutput){
-    //No aulão falaram para importar o arquivo na memória e depois ordenar
 
+    fseek(BIN, 17, SEEK_SET);
+
+    //No aulão falaram para importar o arquivo na memória e depois ordenar
     int nRegisters = 0; //vou usar como index para o array tambem
     int capacity = 50;
     regData* dataArray = (regData*) malloc(capacity * sizeof(regData)); //vetor dinamico com 50 elementos no começo
@@ -187,6 +197,7 @@ regData* dataBIN2MemoryData(FILE* BIN, int* sizeOutput){
     return dataArray;
 }
 
+//código torturativo em C: (aux pra comparação)
 int compare_codEstacao(const void *a, const void *b){
     //Que sintaxe abominável meu deus
     return ((regData *) a)->codEstacao - ((regData *)b)->codEstacao;
@@ -197,7 +208,7 @@ int compare_codProxEstacao(const void *a, const void *b){
     return ((regData *) a)->codProxEstacao - ((regData *)b)->codProxEstacao;
 }
 
-//ordena os registros de dados na memória
+//ordena um array de registros de dados na memória
 //type = 0 ordena por codEstacao e type = 1 ordena por codProxEstacao
 void sortMemoryData(regData* dataArray, int size, int type){
     //Usei a funcao qsort do C que comentaram no aulão
@@ -214,8 +225,8 @@ void sortMemoryData(regData* dataArray, int size, int type){
 }
 
 
-//Cria novo arquivo ordenado, NÃO cuida da desalocação do array
-void writeMemoryDataBIN(FILE* BIN, regData* dataArray, int size, regHeader* header){
+//Cria novo arquivo a partir de um array em memória
+void create_DataBIN_from_memory(FILE* BIN, regData* dataArray, int size, regHeader* header){
     //Pilha de removidos vai resetar e proxRRN vai mudar
     header->status = '0';
     header->topo = -1;
@@ -227,8 +238,8 @@ void writeMemoryDataBIN(FILE* BIN, regData* dataArray, int size, regHeader* head
     }
 }
 
-//Desaloca o array
-void freeMemoryData(regData* dataArray, int size){
+//Desaloca um array em memória
+void free_MemoryData(regData* dataArray, int size){
     for(int i = 0; i<size; i++){
         regData* reg = &dataArray[i];
         if(reg->nomeEstacao != NULL) free(reg->nomeEstacao);

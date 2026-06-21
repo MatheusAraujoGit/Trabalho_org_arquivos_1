@@ -22,20 +22,25 @@
     void union_singleLoop(FILE* BIN, FILE* BIN2);
 
     //ordernar arquivo
-    void sort_file(FILE* BIN, FILE* newBIN, regHeader header, char* sortField);
+    void sort_file(FILE* BIN, FILE* newBIN, char* sortField);
     
     //uniao c/ arquivos ordenados
-    void union_sort_merge(FILE* BIN, regHeader header, FILE* BIN2, regHeader header2);
+    void union_sort_merge(FILE* BIN, FILE* BIN2);
     
 // ----------------------------------------------------------------------------------------------------------------------------------------
 //                                            funções usadas nas implementações das funcionalidades
 // ----------------------------------------------------------------------------------------------------------------------------------------
 
-regData* dataBIN2MemoryData(FILE* BIN, int* sizeOutput);
+    //cria e retorna array de dados na memoria e escreve o numero de registros no endereco sizeOutput
+    regData* dataBIN2MemoryData(FILE* BIN, int* sizeOutput);
 
-void sortMemoryData(regData* dataArray, int size, int type);
+    //ordena um array de registros de dados na memória
+    void sortMemoryData(regData* dataArray, int size, int type);
 
-void writeMemoryDataBIN(FILE* BIN, regData* dataArray, int size, regHeader* header);
+    //Cria novo arquivo a partir de um array em memória
+    void create_DataBIN_from_memory(FILE* BIN, regData* dataArray, int size, regHeader* header);
 
-void freeMemoryData(regData* dataArray, int size);
+    //Desaloca um array em memória
+    void free_MemoryData(regData* dataArray, int size);
+
 #endif
