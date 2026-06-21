@@ -124,15 +124,17 @@ void sort_file(FILE* BIN, FILE* newBIN, char* sortField){
     free_MemoryData(dataArray, arraySize);
 }
     
-//Reescreve os arquivos para ficarem ordenados e depois faz a união
+//func14
+//Reescreve os arquivos para ficarem ordenados
 //como nesse trabalho os nomeCampos são fixos, vou ja considerar os valores deles como na especificacao
-void union_sort_merge(FILE* BIN, FILE* BIN2){
-
-    //Ordeno os dois arquivos usando funcionalidade 13
-    //já que eu estou sobreescrevendo os arquivos, eles nao vao diminuir de tamanho e vou precisar
+void union_sort_merge(FILE* BIN, regHeader header, FILE* BIN2, regHeader header2){
+    //Ordeno os dois arquivos, já que eu estou sobreescrevendo os arquivos, eles nao vao diminuir de tamanho e vou precisar
     //usar o proxRRN para saber o fim deles e nao ler lixo
     sort_file(BIN, BIN, "codProxEstacao");
     sort_file(BIN2, BIN2, "codEstacao");
+
+    fseek(BIN, 0, SEEK_SET);
+    fseek(BIN2, 0, SEEK_SET);
 
     //Leio novos headers
     regHeader newHeader;
@@ -140,6 +142,7 @@ void union_sort_merge(FILE* BIN, FILE* BIN2){
     regHeader_read(BIN, &newHeader);
     regHeader_read(BIN2, &newHeader2);
 
+    //Se alguns dos arquivos é vazio não tem o que juntar
     if(newHeader.proxRRN == 0 || newHeader2.proxRRN == 0) return;
 
     regData regA;
@@ -151,21 +154,29 @@ void union_sort_merge(FILE* BIN, FILE* BIN2){
     regB.nomeEstacao = NULL;
     regB.nomeLinha = NULL;
 
+    //Ler A e B
     regData_read(BIN, &regA);
     regData_read(BIN2, &regB);
 
-    //todo: comentar melhor o que ta acontecendo aqui
-    int firstBINsteps = 0;
+    //Como eu sobreescrevi os arquivos, pode ainda haver um resto de registros duplicados inválidos no final já que
+    //a sobreescrição não diminui o tamanho dos arquivos, assim eu vou usar o proxRRN que me mostra onde
+    //a parte válida acaba e onde o lixo começa
+
+    //Contadores para eu parar no fim da parte válida dos arquivos 
+    int firstBINsteps = 0; 
     int secBINsteps = 0;
-    while(firstBINsteps < newHeader.proxRRN && secBINsteps < newHeader2.proxRRN){
+    while(firstBINsteps < newHeader.proxRRN && secBINsteps < newHeader2.proxRRN){ //Para se chegar no fim dos registros validos do primeiro BIN ou no fim do segundo
+        //Se A < B
         if(regA.codProxEstacao < regB.codEstacao){
             regData_read(BIN, &regA);
             firstBINsteps++;
         }
+        // A > B
         if(regA.codProxEstacao > regB.codEstacao){
             regData_read(BIN2, &regB);
             secBINsteps++;
         }
+        // A = B
         if(regA.codProxEstacao == regB.codEstacao){
                 regData_printInt(regA.codEstacao);
                 regData_printString(regA.nomeEstacao);
@@ -180,6 +191,7 @@ void union_sort_merge(FILE* BIN, FILE* BIN2){
         }
     }
 
+    //Limpeza de memória(adoro strings dinâmicas)
     if(regA.nomeEstacao != NULL) free(regA.nomeEstacao);
     if(regA.nomeLinha != NULL) free(regA.nomeLinha);
     if(regB.nomeEstacao != NULL) free(regB.nomeEstacao);
