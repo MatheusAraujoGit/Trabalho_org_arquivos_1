@@ -68,7 +68,6 @@ void union_singleLoop(FILE* BIN, FILE* BIN2){
     printf("todo!\n");
 }
 
-//func13
 //Importa tudo para memoria, ordena de acordo com um dos dois campos possiveis e reescreve em um novo arquivo
 void sort_file(FILE* BIN, FILE* newBIN, regHeader header, char* sortField){
     int type = -1;
@@ -83,7 +82,6 @@ void sort_file(FILE* BIN, FILE* newBIN, regHeader header, char* sortField){
 
 }
     
-//func14
 //Reescreve os arquivos para ficarem ordenados
 //como nesse trabalho os nomeCampos são fixos, vou ja considerar os valores deles como na especificacao
 void union_sort_merge(FILE* BIN, regHeader header, FILE* BIN2, regHeader header2){

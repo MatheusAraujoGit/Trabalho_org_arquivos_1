@@ -15,16 +15,16 @@
 //                                                   funcionalidades do trabalho
 // ----------------------------------------------------------------------------------------------------------------------------------------
     
-    //func11
+    //uniao com loop aninhado
     void union_nestedLoop(FILE* BIN, FILE* BIN2);
     
-    //func12
+    //uniao com loop unico
     void union_singleLoop(FILE* BIN, FILE* BIN2);
 
-    //func13
+    //ordernar arquivo
     void sort_file(FILE* BIN, FILE* newBIN, regHeader header, char* sortField);
     
-    //func14
+    //uniao c/ arquivos ordenados
     void union_sort_merge(FILE* BIN, regHeader header, FILE* BIN2, regHeader header2);
     
 // ----------------------------------------------------------------------------------------------------------------------------------------
