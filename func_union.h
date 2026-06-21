@@ -19,7 +19,7 @@
     void union_nestedLoop(FILE* BIN, FILE* BIN2);
     
     //uniao com loop unico
-    void union_singleLoop(FILE* BIN, FILE* BIN2);
+    void union_singleLoop(FILE* BIN, FILE* BIN2, FILE* BTREE);
 
     //ordernar arquivo
     void sort_file(FILE* BIN, FILE* newBIN, char* sortField);

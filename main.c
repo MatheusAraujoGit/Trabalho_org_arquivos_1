@@ -473,6 +473,8 @@ int main()
             scanf("%s", bin_name);
             scanf("%s", trash);
             scanf("%s", bin2_name);
+            scanf("%s", trash);
+            scanf("%s", btree_name);
 
             //tentar abrir arquivos + errorcheck
             BIN = fopen(bin_name, "rb");
@@ -501,8 +503,24 @@ int main()
                 break;
             }
 
+            BTREE = fopen(btree_name, "rb");
+            if (BTREE == NULL){
+                error_flag = true;
+                fclose(BIN);
+                fclose(BIN2);
+                break;
+            }
+            Btreehead = Btree_ReadHeader(BTREE);
+            if(Btreehead.status == '0'){
+                error_flag = true;
+                fclose(BIN);
+                fclose(BIN2);
+                fclose(BTREE);
+                break;
+            }
+
             //executar funcionalidade
-            union_singleLoop(BIN, BIN2);
+            union_singleLoop(BIN, BIN2, BTREE);
 
             //fechar
             fclose(BIN);

@@ -1,10 +1,11 @@
 #include "func_union.h"
+#include "func_Btree.h"
 #include "func_reg.h"
 // ----------------------------------------------------------------------------------------------------------------------------------------
 //                                                   funcionalidades do trabalho
 // ----------------------------------------------------------------------------------------------------------------------------------------
 
-//func11
+//uniao com loop aninhado
 void union_nestedLoop(FILE* BIN, FILE* BIN2){
     regData tempData1;
     regData tempData2;
@@ -52,25 +53,57 @@ void union_nestedLoop(FILE* BIN, FILE* BIN2){
     if (tempData2.nomeLinha != NULL) free(tempData2.nomeLinha);
 }
     
-//func12
-void union_singleLoop(FILE* BIN, FILE* BIN2){
+//uniao com loop unico
+void union_singleLoop(FILE* BIN, FILE* BIN2, FILE* BTREE){
     regData tempData1;
-    regData tempData2;
+    Btree_Header treehead;
+
+    treehead = Btree_ReadHeader(BTREE);
 
     tempData1.nomeEstacao = NULL;
     tempData1.nomeLinha = NULL;
-    tempData2.nomeEstacao = NULL;
-    tempData2.nomeLinha = NULL;
+    bool found_one = false;
 
-    regData_read(BIN, &tempData1);
-    regData_read(BIN2, &tempData2);
+    //ir para começo do arquivo
+    fseek(BIN, 17, SEEK_SET);
 
-    printf("todo!\n");
+    //para cada registro no binario 1
+    while(regData_read(BIN, &tempData1) != -1){
+        //se seu codproxestaçao nao for nulo
+        if(tempData1.codProxEstacao == -1) continue;
+        
+        //procurar um match pro codProxEstacao dele no indice de arvB do binario 2
+        searchstruct result = Btree_Search(BTREE, tempData1.codProxEstacao, treehead.noRaiz);
+
+        //se achou, ai eu leio o registro de dados do binario 2 pra memoria e printo as coisas desejadas na especificacao
+        if(result.found){
+            //ler
+            fseek(BIN2, result.pointer, SEEK_SET);
+            regData found;
+
+            found.nomeEstacao = NULL;
+            found.nomeLinha = NULL;
+
+            regData_read(BIN2, &found);
+
+            //printar
+            regData_printInt(tempData1.codEstacao);
+            regData_printString(tempData1.nomeEstacao);
+            regData_printString(tempData1.nomeLinha);
+            regData_printInt(tempData1.codProxEstacao);
+            regData_printString(found.nomeEstacao);
+            printf("\n");
+            found_one = true;
+
+            if (found.nomeEstacao != NULL) free(found.nomeEstacao);
+            if (found.nomeLinha != NULL) free(found.nomeLinha);
+        }
+    }
+
+    if(!found_one) printf("Registro inexistente.\n");
 
     if (tempData1.nomeEstacao != NULL) free(tempData1.nomeEstacao);
     if (tempData1.nomeLinha != NULL) free(tempData1.nomeLinha);
-    if (tempData2.nomeEstacao != NULL) free(tempData2.nomeEstacao);
-    if (tempData2.nomeLinha != NULL) free(tempData2.nomeLinha);
 }
 
 //Importa tudo para memoria, ordena de acordo com um dos dois campos possiveis e reescreve em um novo arquivo
@@ -121,6 +154,7 @@ void union_sort_merge(FILE* BIN, FILE* BIN2){
     regData_read(BIN, &regA);
     regData_read(BIN2, &regB);
 
+    //todo: comentar melhor o que ta acontecendo aqui
     int firstBINsteps = 0;
     int secBINsteps = 0;
     while(firstBINsteps < newHeader.proxRRN && secBINsteps < newHeader2.proxRRN){
