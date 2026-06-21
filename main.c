@@ -470,6 +470,7 @@ int main()
         //--------
         case 12: //funcionalidade 12: self-union de codEstacao e codProxEstacao usando single loop
             //ler nomes dos arquivos (com essa especificaçao, so preciso ler os nomes de arquivos)
+
             scanf("%s", bin_name);
             scanf("%s", trash);
             scanf("%s", bin2_name);
@@ -525,6 +526,7 @@ int main()
             //fechar
             fclose(BIN);
             fclose(BIN2);
+            fclose(BTREE);
         break;
 
         //--------
