@@ -127,7 +127,7 @@ void sort_file(FILE* BIN, FILE* newBIN, char* sortField){
 //func14
 //Reescreve os arquivos para ficarem ordenados
 //como nesse trabalho os nomeCampos são fixos, vou ja considerar os valores deles como na especificacao
-void union_sort_merge(FILE* BIN, regHeader header, FILE* BIN2, regHeader header2){
+void union_sort_merge(FILE* BIN, FILE* BIN2){
     //Ordeno os dois arquivos, já que eu estou sobreescrevendo os arquivos, eles nao vao diminuir de tamanho e vou precisar
     //usar o proxRRN para saber o fim deles e nao ler lixo
     sort_file(BIN, BIN, "codProxEstacao");
