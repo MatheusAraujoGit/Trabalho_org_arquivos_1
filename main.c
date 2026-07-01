@@ -557,11 +557,9 @@ int main()
                 break;
             }
 
+            //consistencia é cuidada dentro da funcão
             //executar funcionalidade
             sort_file(BIN, BIN2, sortField);
-
-            //setar consistente
-            regHeader_setFileConsistent(BIN2);
 
             //fechar e imprimir
             fclose(BIN);
@@ -604,16 +602,10 @@ int main()
                 fclose(BIN2);
                 break;
             }
-            //Consistencia ja que vou mexer nos dois arquivos
-            regHeader_setFileInconsistent(BIN);
-            regHeader_setFileInconsistent(BIN2);
 
+            //consistencia é cuidada dentro da função
             //executar funcionalidade
             union_sort_merge(BIN, BIN2);
-            
-            //setar consistente
-            regHeader_setFileConsistent(BIN);
-            regHeader_setFileConsistent(BIN2);
 
             //fechar
             fclose(BIN);

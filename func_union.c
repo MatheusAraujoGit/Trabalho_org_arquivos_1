@@ -129,6 +129,7 @@ void sort_file(FILE* BIN, FILE* newBIN, char* sortField){
 //como nesse trabalho os nomeCampos são fixos, vou ja considerar os valores deles como na especificacao
 void union_sort_merge(FILE* BIN, FILE* BIN2){
     //Ordeno os dois arquivos, já que eu estou sobreescrevendo os arquivos, eles nao vao diminuir de tamanho e vou precisar
+    //funçao de ordenar ja cuida das consistencias
     //usar o proxRRN para saber o fim deles e nao ler lixo
     sort_file(BIN, BIN, "codProxEstacao");
     sort_file(BIN2, BIN2, "codEstacao");
@@ -273,15 +274,22 @@ void sortMemoryData(regData* dataArray, int size, int type){
 
 //Cria novo arquivo a partir de um array em memória
 void create_DataBIN_from_memory(FILE* BIN, regData* dataArray, int size, regHeader* header){
-    //Pilha de removidos vai resetar e proxRRN vai mudar
+    
+    //começar escrevendo como inconsistente, depois no fim voltar e deixar consistente
     header->status = '0';
-    header->topo = -1;
-    header->proxRRN = size;
+    
     regHeader_write(BIN, header);
 
     for(int i = 0; i<size; i++){
         regData_write(BIN, &dataArray[i]);
     }
+
+    //Pilha de removidos vai resetar e proxRRN vai mudar
+    //setar consistencia
+    header->status = '1';
+    header->topo = -1;
+    header->proxRRN = size;
+    regHeader_write(BIN, header);
 }
 
 //Desaloca um array em memória
