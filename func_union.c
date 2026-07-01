@@ -132,10 +132,10 @@ void union_sort_merge(FILE* BIN, FILE* BIN2){
     //usar o proxRRN para saber o fim deles e nao ler lixo
     sort_file(BIN, BIN, "codProxEstacao");
     sort_file(BIN2, BIN2, "codEstacao");
-
+    
     fseek(BIN, 0, SEEK_SET);
     fseek(BIN2, 0, SEEK_SET);
-
+    
     //Leio novos headers
     regHeader newHeader;
     regHeader newHeader2;

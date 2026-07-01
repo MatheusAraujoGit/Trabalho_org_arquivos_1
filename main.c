@@ -604,6 +604,9 @@ int main()
                 fclose(BIN2);
                 break;
             }
+            //Consistencia ja que vou mexer nos dois arquivos
+            regHeader_setFileInconsistent(BIN);
+            regHeader_setFileInconsistent(BIN2);
 
             //executar funcionalidade
             union_sort_merge(BIN, BIN2);
